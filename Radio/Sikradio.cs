@@ -11,6 +11,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
+using MissionPlanner.Comms;
+using MissionPlanner.Controls;
+using MissionPlanner.MsgBox;
+using MissionPlanner.Radio;
+using MissionPlanner.Utilities;
+using Microsoft.VisualBasic;
 
 namespace MissionPlanner.Radio
 {
@@ -185,15 +191,6 @@ S15: MAX_WINDOW=131
                 return getFirmwareLocal(device == Uploader.Board.DEVICE_ID_RFD900X);
             }
 
-            if (device == Uploader.Board.DEVICE_ID_HB1060)
-            {
-                if (beta)
-                {
-                    return Download.getFilefromNet("https://firmware.ardupilot.org/SiK/beta/radio~hb1060.ihx", firmwarefile);
-                }
-                return Download.getFilefromNet("https://firmware.ardupilot.org/SiK/stable/radio~hb1060.ihx",
-                    firmwarefile);
-            }
             if (device == Uploader.Board.DEVICE_ID_HM_TRP)
             {
                 if (beta)
@@ -621,15 +618,12 @@ S15: MAX_WINDOW=131
                                             }
                                         }
                                     }
-                                    else if (controls[0] is TextBox)
-                                    {
-                                    }
                                     else if (controls[0].Name.Contains("MAVLINK")) //
                                     {
                                         if (((ComboBox)controls[0]).SelectedValue.ToString() != values[2].Trim())
                                         {
                                             var cmdanswer = doCommand(Session.Port,
-                                                "ATS" + GetParamNumber(values[0]) + "=" + ((ComboBox) controls[0]).SelectedValue);
+                                                "ATS" + GetParamNumber(values[0]) + "=" + ((ComboBox)controls[0]).SelectedValue);
 
                                             if (cmdanswer.Contains("OK"))
                                             {
@@ -798,6 +792,79 @@ S15: MAX_WINDOW=131
             }
         }
 
+        /// <summary>
+        /// Return an array of ints in a linear progression, but end is always included as the end.
+        /// </summary>
+        /// <param name="start">The start</param>
+        /// <param name="step">The step</param>
+        /// <param name="end">The end, always included</param>
+        /// <returns>The array of ints, never null</returns>
+        public static IEnumerable<int> Range(int start1, int end1, int start2, int end2,int step)
+        {
+            bool GotEnd = false;
+            /*
+             * To speed things up, might be best to use array and calculate
+             * length ahead of time.
+             * 
+             * length = ((end - start - 1) / step) + 2
+             * 
+             * 1, 13, 3 = 5
+             * 1, 14, 3 = 6
+             * 1, 15, 3 = 6
+             * 
+             */
+
+            try
+            {
+
+                int[] list;
+                int index = 0;
+
+                if (start1 == end1 && start2 == end2)
+                {
+                    list = new int[2];
+                }
+                else
+                {
+                    list = new int[((end1 - start1 - 1) / step) + ((end2 - start2 - 1) / step) + 4];
+                }
+
+                for (var a = start1; a <= end1; a += step)
+                {
+                    if (a == end1)
+                    {
+                        GotEnd = true;
+                    }
+                    list[index++] = a;
+                }
+
+                if (!GotEnd)
+                {
+                    list[index++] = end1;
+                }
+                GotEnd = false;
+                for (var a = start2; a <= end2; a += step)
+                {
+                    if (a == end2)
+                    {
+                        GotEnd = true;
+                    }
+                    list[index++] = a;
+                }
+
+                if (!GotEnd)
+                {
+                    list[index++] = end2;
+                }
+                return list;
+            }
+            catch (Exception e)
+            {
+                //Console.WriteLine();
+
+                throw e;
+            }
+        }
 
         private bool SetupCBWithSetting(ComboBox CB, Dictionary<string, RFD.RFD900.TSetting> Settings,
             string Value, bool Remote)
@@ -903,6 +970,26 @@ S15: MAX_WINDOW=131
             EnableProgrammingControls(false);
             lbl_status.Text = "Connecting";
 
+            // add iman
+            // sett to default state
+            label3.Text = "Air Speed";
+            label30.Text = "Air Speed";
+            label6.Text = "ECC";
+            label27.Text = "ECC";
+            label19.Text = "RTS CTS";
+            label33.Text = "RTS CTS";
+            label8.Text = "Op Resend";
+            label25.Text = "Op Resend";
+
+            label43.Visible = label44.Visible = false;
+            BANDWIDTH.Visible = RBANDWIDTH.Visible = false;
+
+            CODING_RATE.Visible = RCODING_RATE.Visible = false;
+            PREAMBLE_LEN.Visible = RPREAMBLE_LEN.Visible = false;
+
+            ECC.Visible = RECC.Visible = true;
+            RTSCTS.Visible = RRTSCTS.Visible = true;
+
             try
             {
                 if (Session.PutIntoATCommandMode() == RFD.RFD900.TSession.TMode.AT_COMMAND)
@@ -938,9 +1025,8 @@ S15: MAX_WINDOW=131
 
                     var freq =
                         (Uploader.Frequency)
-                        Enum.Parse(typeof(Uploader.Frequency),
-                            int.Parse(freqstring.ToLower().Replace("x", ""), style, CultureInfo.InvariantCulture)
-                                .ToString());
+                            Enum.Parse(typeof(Uploader.Frequency),
+                                int.Parse(freqstring.ToLower().Replace("x", ""), style).ToString());
 
                     ATI3.Text = freq.ToString();
 
@@ -958,7 +1044,7 @@ S15: MAX_WINDOW=131
                     Session.Board =
                         (Uploader.Board)
                             Enum.Parse(typeof(Uploader.Board),
-                                int.Parse(boardstring.ToLower().Replace("x", ""), style, CultureInfo.InvariantCulture).ToString());
+                                int.Parse(boardstring.ToLower().Replace("x", ""), style).ToString());
 
                     ATI2.Text = Session.Board.ToString();
 
@@ -993,7 +1079,6 @@ S15: MAX_WINDOW=131
 
                         MAX_WINDOW.DataSource = Range(20, 1, 400);
                         RMAX_WINDOW.DataSource = Range(20, 1, 400);
-
                     }
                     else
                     {
@@ -1003,36 +1088,148 @@ S15: MAX_WINDOW=131
                     // 8 and 9
                     if (freq == Uploader.Frequency.FREQ_915)
                     {
-                        MIN_FREQ.DataSource = Range(895000, 1000, 935000);
-                        RMIN_FREQ.DataSource = Range(895000, 1000, 935000);
+                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV)
+                        {
+                            MIN_FREQ.DataSource = Range(863000, 870000, 902000, 928000, 1000);
+                            RMIN_FREQ.DataSource = Range(863000, 870000, 902000, 928000, 1000);
+                            //MIN_FREQ.DataSource = Range(902000, 1000, 928000);
+                            //RMIN_FREQ.DataSource = Range(902000, 1000, 928000);
 
-                        MAX_FREQ.DataSource = Range(895000, 1000, 935000);
-                        RMAX_FREQ.DataSource = Range(895000, 1000, 935000);
+                            MAX_FREQ.DataSource = Range(863000, 870000, 902000, 928000, 1000);
+                            RMAX_FREQ.DataSource = Range(863000, 870000, 902000, 928000, 1000);
+                            //MAX_FREQ.DataSource = Range(902000, 1000, 928000);
+                            //RMAX_FREQ.DataSource = Range(902000, 1000, 928000);
+                        }
+                        else
+                        {
+                            MIN_FREQ.DataSource = Range(895000, 1000, 935000);
+                            RMIN_FREQ.DataSource = Range(895000, 1000, 935000);
+
+                            MAX_FREQ.DataSource = Range(895000, 1000, 935000);
+                            RMAX_FREQ.DataSource = Range(895000, 1000, 935000);
+                        }
                     }
                     else if (freq == Uploader.Frequency.FREQ_433)
                     {
-                        MIN_FREQ.DataSource = Range(414000, 10, 460000);
-                        RMIN_FREQ.DataSource = Range(414000, 10, 460000);
+                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV)
+                        {
+                            MIN_FREQ.DataSource = Range(430000, 500, 440000);
+                            RMIN_FREQ.DataSource = Range(430000, 500, 440000);
 
-                        MAX_FREQ.DataSource = Range(414000, 10, 460000);
-                        RMAX_FREQ.DataSource = Range(414000, 10, 460000);
+                            MAX_FREQ.DataSource = Range(430000, 500, 440000);
+                            RMAX_FREQ.DataSource = Range(430000, 500, 440000);
+                        }
+                        else
+                        {
+                            MIN_FREQ.DataSource = Range(414000, 10, 460000);
+                            RMIN_FREQ.DataSource = Range(414000, 10, 460000);
+
+                            MAX_FREQ.DataSource = Range(414000, 10, 460000);
+                            RMAX_FREQ.DataSource = Range(414000, 10, 460000);
+                        }
                     }
                     else if (freq == Uploader.Frequency.FREQ_868)
                     {
-                        MIN_FREQ.DataSource = Range(849000, 1000, 889000);
-                        RMIN_FREQ.DataSource = Range(849000, 1000, 889000);
+                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV)
+                        {
+                            MIN_FREQ.DataSource = Range(863000, 1000, 870000);
+                            RMIN_FREQ.DataSource = Range(863000, 1000, 870000);
 
-                        MAX_FREQ.DataSource = Range(849000, 1000, 889000);
-                        RMAX_FREQ.DataSource = Range(849000, 1000, 889000);
+                            MAX_FREQ.DataSource = Range(863000, 1000, 870000);
+                            RMAX_FREQ.DataSource = Range(863000, 1000, 870000);
+                        }
+                        else
+                        {
+                            MIN_FREQ.DataSource = Range(849000, 1000, 889000);
+                            RMIN_FREQ.DataSource = Range(849000, 1000, 889000);
+
+                            MAX_FREQ.DataSource = Range(849000, 1000, 889000);
+                            RMAX_FREQ.DataSource = Range(849000, 1000, 889000);
+                        }
+                    }
+
+                    if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV)
+                    {
+                        // change control text label
+                        label3.Text = "SF";
+                        label30.Text = "SF";
+                        label6.Text = "Coding Rate";
+                        label27.Text = "Coding Rate";
+                        label19.Text = "Preamble Len";
+                        label33.Text = "Preamble Len";
+                        label8.Text = "Invert IQ";
+                        label25.Text = "Invert IQ";
+                        // change control settings
+                        ECC.Enabled = false;
+                        ECC.Visible = false;
+                        RECC.Enabled = false;
+                        RECC.Visible = false;
+
+                        RTSCTS.Enabled = false;
+                        RTSCTS.Visible = false;
+                        RRTSCTS.Enabled = false;
+                        RRTSCTS.Visible = false;
+
+                        CODING_RATE.Visible = true;
+                        RCODING_RATE.Visible = true;
+
+                        PREAMBLE_LEN.Visible = true;
+                        RPREAMBLE_LEN.Visible = true;
+
+                        label43.Visible = label44.Visible = true;
+                        BANDWIDTH.Visible = true;
+                        RBANDWIDTH.Visible = true;
+                        
+                        BANDWIDTH.DataSource = new int[] { 125, 250, 500};
+                        RBANDWIDTH.DataSource = new int[] { 125, 250, 500};                        
+
+                        PREAMBLE_LEN.DataSource = Range(8, 1, 128);
+                        RPREAMBLE_LEN.DataSource = Range(8, 1, 128);
+
+                        CODING_RATE.DataSource = Range(1, 1, 4);
+                        RCODING_RATE.DataSource = Range(1, 1, 4);
+
+                        NETID.DataSource = new int[] {18,19,22,26,27,30,31,33,37,39,41,43,45,47,49,50,53,54,57,58,
+                                                     61,62,82,83,86,87,90,91,94,95,97,99,101,103,105,107,109,111,113,114,
+                                                     117,118,121,122,125,126,127,146,147,150,151,158,159,161,163,164,165,167,169,171,
+                                                     173,175,177,178,181,182,185,186,189,190,211,214,215,218,222,223,225,227,229,231,
+                                                     233,237,241,242,245,249,250,253,254};
+                        RNETID.DataSource = new int[] {18,19,22,26,27,30,31,33,37,39,41,43,45,47,49,50,53,54,57,58,
+                                                     61,62,82,83,86,87,90,91,94,95,97,99,101,103,105,107,109,111,113,114,
+                                                     117,118,121,122,125,126,127,146,147,150,151,158,159,161,163,164,165,167,169,171,
+                                                     173,175,177,178,181,182,185,186,189,190,211,214,215,218,222,223,225,227,229,231,
+                                                     233,237,241,242,245,249,250,253,254};
+
+                        // change air speed to SF
+                        AIR_SPEED.DataSource = new int[] { 5, 6, 7, 8 };
+                        RAIR_SPEED.DataSource = new int[] { 5, 6, 7, 8 };
+
+                        MAX_WINDOW.DataSource = Range(100, 10, 500);
+                        RMAX_WINDOW.DataSource = Range(100, 10, 500);
                     }
 
                     if (Session.Board == Uploader.Board.DEVICE_ID_RFD900 ||
                             Session.Board == Uploader.Board.DEVICE_ID_RFD900A
                             || Session.Board == Uploader.Board.DEVICE_ID_RFD900P ||
-                            Session.Board == Uploader.Board.DEVICE_ID_RFD900X)
+                            Session.Board == Uploader.Board.DEVICE_ID_RFD900X ||
+                            Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV)
                     {
                         TXPOWER.DataSource = Range(0, 1, 30);
                         RTXPOWER.DataSource = Range(0, 1, 30);
+                    }
+                    else if(Session.Board == Uploader.Board. DEVICE_ID_SKY_DB30) // redefined data source
+                    {
+                        TXPOWER.DataSource = Range(0, 1, 7);        // limit tx power to 7
+                        RTXPOWER.DataSource = Range(0, 1, 7);
+
+                        NETID.DataSource = Range(0, 1, 65535);      // increase net id to full word size
+                        RNETID.DataSource = Range(0, 1, 65535);
+
+                        AIR_SPEED.DataSource = new int[] { 19, 24, 32, 48, 64, 128 };
+                        RAIR_SPEED.DataSource = new int[] { 19, 24, 32, 48, 64, 128 };
+
+                        NUM_CHANNELS.DataSource = Range(10, 5, 50);
+                        RNUM_CHANNELS.DataSource = Range(10, 5, 50);
                     }
                     else
                     {
@@ -1399,7 +1596,7 @@ S15: MAX_WINDOW=131
             Thread.Sleep(50);
             comPort.Write(cmd + "\r\n");
 
-            comPort.ReadTimeout = 1000;
+            comPort.ReadTimeout = 4000;
 
             // command echo
             var cmdecho = Serial_ReadLine(comPort);
@@ -1410,7 +1607,7 @@ S15: MAX_WINDOW=131
 
                 if (multiLineResponce)
                 {
-                    var deadline = DateTime.Now.AddMilliseconds(1000);
+                    var deadline = DateTime.Now.AddMilliseconds(2000);
                     while (comPort.BytesToRead > 0 || DateTime.Now < deadline)
                     {
                         try
@@ -1533,6 +1730,9 @@ S15: MAX_WINDOW=131
             RMAX_WINDOW.Text = MAX_WINDOW.Text;
             RENCRYPTION_LEVEL.Checked = ENCRYPTION_LEVEL.Checked;
             txt_Raeskey.Text = txt_aeskey.Text;
+            RCODING_RATE.Text = CODING_RATE.Text;
+            RPREAMBLE_LEN.Text = PREAMBLE_LEN.Text;
+            RBANDWIDTH.Text = BANDWIDTH.Text;
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -1752,6 +1952,7 @@ red LED solid - in firmware update mode");
             }
             EnableProgrammingControls(true);
             EnableConfigControls(true);
+            EndSessionClosePort();
             //UploadFW(true);
             if (GetCommsSerialAlt == null)
             {

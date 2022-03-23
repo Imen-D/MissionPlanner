@@ -66,6 +66,7 @@
             this.TXPOWER = new System.Windows.Forms.ComboBox();
             this.ECC = new System.Windows.Forms.CheckBox();
             this.OPPRESEND = new System.Windows.Forms.CheckBox();
+            this.BUT_SetPPMFailSafe = new MissionPlanner.Controls.MyButton();
             this.RTI = new System.Windows.Forms.TextBox();
             this.ATI = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
@@ -73,6 +74,10 @@
             this.lbl_status = new System.Windows.Forms.Label();
             this.ATI3 = new System.Windows.Forms.TextBox();
             this.groupBoxLocal = new System.Windows.Forms.GroupBox();
+            this.BANDWIDTH = new System.Windows.Forms.ComboBox();
+            this.label43 = new System.Windows.Forms.Label();
+            this.PREAMBLE_LEN = new System.Windows.Forms.ComboBox();
+            this.CODING_RATE = new System.Windows.Forms.ComboBox();
             this.btnRandom = new System.Windows.Forms.Button();
             this.lblRX_ENCAP_METHOD = new System.Windows.Forms.Label();
             this.RX_ENCAP_METHOD = new System.Windows.Forms.ComboBox();
@@ -118,6 +123,10 @@
             this.label14 = new System.Windows.Forms.Label();
             this.ATI2 = new System.Windows.Forms.TextBox();
             this.groupBoxRemote = new System.Windows.Forms.GroupBox();
+            this.RBANDWIDTH = new System.Windows.Forms.ComboBox();
+            this.label44 = new System.Windows.Forms.Label();
+            this.RPREAMBLE_LEN = new System.Windows.Forms.ComboBox();
+            this.RCODING_RATE = new System.Windows.Forms.ComboBox();
             this.lblRRX_ENCAP_METHOD = new System.Windows.Forms.Label();
             this.RRX_ENCAP_METHOD = new System.Windows.Forms.ComboBox();
             this.lblRTX_ENCAP_METHOD = new System.Windows.Forms.Label();
@@ -161,7 +170,6 @@
             this.RTI2 = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
-            this.BUT_SetPPMFailSafe = new MissionPlanner.Controls.MyButton();
             this.BUT_loadcustom = new MissionPlanner.Controls.MyButton();
             this.BUT_resettodefault = new MissionPlanner.Controls.MyButton();
             this.BUT_savesettings = new MissionPlanner.Controls.MyButton();
@@ -400,40 +408,8 @@
             // 
             // RNETID
             // 
-            this.RNETID.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             resources.ApplyResources(this.RNETID, "RNETID");
             this.RNETID.FormattingEnabled = true;
-            this.RNETID.Items.AddRange(new object[] {
-            resources.GetString("RNETID.Items"),
-            resources.GetString("RNETID.Items1"),
-            resources.GetString("RNETID.Items2"),
-            resources.GetString("RNETID.Items3"),
-            resources.GetString("RNETID.Items4"),
-            resources.GetString("RNETID.Items5"),
-            resources.GetString("RNETID.Items6"),
-            resources.GetString("RNETID.Items7"),
-            resources.GetString("RNETID.Items8"),
-            resources.GetString("RNETID.Items9"),
-            resources.GetString("RNETID.Items10"),
-            resources.GetString("RNETID.Items11"),
-            resources.GetString("RNETID.Items12"),
-            resources.GetString("RNETID.Items13"),
-            resources.GetString("RNETID.Items14"),
-            resources.GetString("RNETID.Items15"),
-            resources.GetString("RNETID.Items16"),
-            resources.GetString("RNETID.Items17"),
-            resources.GetString("RNETID.Items18"),
-            resources.GetString("RNETID.Items19"),
-            resources.GetString("RNETID.Items20"),
-            resources.GetString("RNETID.Items21"),
-            resources.GetString("RNETID.Items22"),
-            resources.GetString("RNETID.Items23"),
-            resources.GetString("RNETID.Items24"),
-            resources.GetString("RNETID.Items25"),
-            resources.GetString("RNETID.Items26"),
-            resources.GetString("RNETID.Items27"),
-            resources.GetString("RNETID.Items28"),
-            resources.GetString("RNETID.Items29")});
             this.RNETID.Name = "RNETID";
             this.toolTip1.SetToolTip(this.RNETID, resources.GetString("RNETID.ToolTip"));
             // 
@@ -676,40 +652,8 @@
             // 
             // NETID
             // 
-            this.NETID.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             resources.ApplyResources(this.NETID, "NETID");
             this.NETID.FormattingEnabled = true;
-            this.NETID.Items.AddRange(new object[] {
-            resources.GetString("NETID.Items"),
-            resources.GetString("NETID.Items1"),
-            resources.GetString("NETID.Items2"),
-            resources.GetString("NETID.Items3"),
-            resources.GetString("NETID.Items4"),
-            resources.GetString("NETID.Items5"),
-            resources.GetString("NETID.Items6"),
-            resources.GetString("NETID.Items7"),
-            resources.GetString("NETID.Items8"),
-            resources.GetString("NETID.Items9"),
-            resources.GetString("NETID.Items10"),
-            resources.GetString("NETID.Items11"),
-            resources.GetString("NETID.Items12"),
-            resources.GetString("NETID.Items13"),
-            resources.GetString("NETID.Items14"),
-            resources.GetString("NETID.Items15"),
-            resources.GetString("NETID.Items16"),
-            resources.GetString("NETID.Items17"),
-            resources.GetString("NETID.Items18"),
-            resources.GetString("NETID.Items19"),
-            resources.GetString("NETID.Items20"),
-            resources.GetString("NETID.Items21"),
-            resources.GetString("NETID.Items22"),
-            resources.GetString("NETID.Items23"),
-            resources.GetString("NETID.Items24"),
-            resources.GetString("NETID.Items25"),
-            resources.GetString("NETID.Items26"),
-            resources.GetString("NETID.Items27"),
-            resources.GetString("NETID.Items28"),
-            resources.GetString("NETID.Items29")});
             this.NETID.Name = "NETID";
             this.toolTip1.SetToolTip(this.NETID, resources.GetString("NETID.ToolTip"));
             // 
@@ -741,6 +685,14 @@
             resources.ApplyResources(this.OPPRESEND, "OPPRESEND");
             this.OPPRESEND.Name = "OPPRESEND";
             this.toolTip1.SetToolTip(this.OPPRESEND, resources.GetString("OPPRESEND.ToolTip"));
+            // 
+            // BUT_SetPPMFailSafe
+            // 
+            resources.ApplyResources(this.BUT_SetPPMFailSafe, "BUT_SetPPMFailSafe");
+            this.BUT_SetPPMFailSafe.Name = "BUT_SetPPMFailSafe";
+            this.toolTip1.SetToolTip(this.BUT_SetPPMFailSafe, resources.GetString("BUT_SetPPMFailSafe.ToolTip"));
+            this.BUT_SetPPMFailSafe.UseVisualStyleBackColor = true;
+            this.BUT_SetPPMFailSafe.Click += new System.EventHandler(this.BUT_SetPPMFailSafe_Click);
             // 
             // RTI
             // 
@@ -777,6 +729,10 @@
             // 
             // groupBoxLocal
             // 
+            this.groupBoxLocal.Controls.Add(this.BANDWIDTH);
+            this.groupBoxLocal.Controls.Add(this.label43);
+            this.groupBoxLocal.Controls.Add(this.PREAMBLE_LEN);
+            this.groupBoxLocal.Controls.Add(this.CODING_RATE);
             this.groupBoxLocal.Controls.Add(this.btnRandom);
             this.groupBoxLocal.Controls.Add(this.lblRX_ENCAP_METHOD);
             this.groupBoxLocal.Controls.Add(this.RX_ENCAP_METHOD);
@@ -845,6 +801,32 @@
             resources.ApplyResources(this.groupBoxLocal, "groupBoxLocal");
             this.groupBoxLocal.Name = "groupBoxLocal";
             this.groupBoxLocal.TabStop = false;
+            // 
+            // BANDWIDTH
+            // 
+            this.BANDWIDTH.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            resources.ApplyResources(this.BANDWIDTH, "BANDWIDTH");
+            this.BANDWIDTH.FormattingEnabled = true;
+            this.BANDWIDTH.Name = "BANDWIDTH";
+            // 
+            // label43
+            // 
+            resources.ApplyResources(this.label43, "label43");
+            this.label43.Name = "label43";
+            // 
+            // PREAMBLE_LEN
+            // 
+            this.PREAMBLE_LEN.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            resources.ApplyResources(this.PREAMBLE_LEN, "PREAMBLE_LEN");
+            this.PREAMBLE_LEN.FormattingEnabled = true;
+            this.PREAMBLE_LEN.Name = "PREAMBLE_LEN";
+            // 
+            // CODING_RATE
+            // 
+            this.CODING_RATE.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            resources.ApplyResources(this.CODING_RATE, "CODING_RATE");
+            this.CODING_RATE.FormattingEnabled = true;
+            this.CODING_RATE.Name = "CODING_RATE";
             // 
             // btnRandom
             // 
@@ -1095,6 +1077,10 @@
             // 
             // groupBoxRemote
             // 
+            this.groupBoxRemote.Controls.Add(this.RBANDWIDTH);
+            this.groupBoxRemote.Controls.Add(this.label44);
+            this.groupBoxRemote.Controls.Add(this.RPREAMBLE_LEN);
+            this.groupBoxRemote.Controls.Add(this.RCODING_RATE);
             this.groupBoxRemote.Controls.Add(this.lblRRX_ENCAP_METHOD);
             this.groupBoxRemote.Controls.Add(this.RRX_ENCAP_METHOD);
             this.groupBoxRemote.Controls.Add(this.lblRTX_ENCAP_METHOD);
@@ -1157,6 +1143,32 @@
             resources.ApplyResources(this.groupBoxRemote, "groupBoxRemote");
             this.groupBoxRemote.Name = "groupBoxRemote";
             this.groupBoxRemote.TabStop = false;
+            // 
+            // RBANDWIDTH
+            // 
+            this.RBANDWIDTH.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            resources.ApplyResources(this.RBANDWIDTH, "RBANDWIDTH");
+            this.RBANDWIDTH.FormattingEnabled = true;
+            this.RBANDWIDTH.Name = "RBANDWIDTH";
+            // 
+            // label44
+            // 
+            resources.ApplyResources(this.label44, "label44");
+            this.label44.Name = "label44";
+            // 
+            // RPREAMBLE_LEN
+            // 
+            this.RPREAMBLE_LEN.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            resources.ApplyResources(this.RPREAMBLE_LEN, "RPREAMBLE_LEN");
+            this.RPREAMBLE_LEN.FormattingEnabled = true;
+            this.RPREAMBLE_LEN.Name = "RPREAMBLE_LEN";
+            // 
+            // RCODING_RATE
+            // 
+            this.RCODING_RATE.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            resources.ApplyResources(this.RCODING_RATE, "RCODING_RATE");
+            this.RCODING_RATE.FormattingEnabled = true;
+            this.RCODING_RATE.Name = "RCODING_RATE";
             // 
             // lblRRX_ENCAP_METHOD
             // 
@@ -1394,14 +1406,6 @@
             resources.ApplyResources(this.label10, "label10");
             this.label10.Name = "label10";
             // 
-            // BUT_SetPPMFailSafe
-            // 
-            resources.ApplyResources(this.BUT_SetPPMFailSafe, "BUT_SetPPMFailSafe");
-            this.BUT_SetPPMFailSafe.Name = "BUT_SetPPMFailSafe";
-            this.toolTip1.SetToolTip(this.BUT_SetPPMFailSafe, resources.GetString("BUT_SetPPMFailSafe.ToolTip"));
-            this.BUT_SetPPMFailSafe.UseVisualStyleBackColor = true;
-            this.BUT_SetPPMFailSafe.Click += new System.EventHandler(this.BUT_SetPPMFailSafe_Click);
-            // 
             // BUT_loadcustom
             // 
             resources.ApplyResources(this.BUT_loadcustom, "BUT_loadcustom");
@@ -1611,5 +1615,13 @@
         private System.Windows.Forms.Label label21;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.Button btnRandom;
+        private System.Windows.Forms.ComboBox PREAMBLE_LEN;
+        private System.Windows.Forms.ComboBox CODING_RATE;
+        private System.Windows.Forms.ComboBox RPREAMBLE_LEN;
+        private System.Windows.Forms.ComboBox RCODING_RATE;
+        private System.Windows.Forms.ComboBox BANDWIDTH;
+        private System.Windows.Forms.Label label43;
+        private System.Windows.Forms.ComboBox RBANDWIDTH;
+        private System.Windows.Forms.Label label44;
     }
 }

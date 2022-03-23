@@ -133,9 +133,12 @@ namespace SikRadio
             if ((comPort != null) && comPort.IsOpen)
             {
                 comPort.WriteLine("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-
                 if (comPort.BytesToRead < 50)
+                {
+                    byte[] arraydata = new byte[100];
+                    comPort.Read(arraydata, 0, comPort.BytesToRead);
                     return;
+                }
 
                 var line = comPort.ReadLine();
 

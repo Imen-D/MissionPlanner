@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading;
 using MissionPlanner.Comms;
 
@@ -14,12 +13,12 @@ namespace MissionPlanner.Radio
         public enum Board : byte
         {
             // device IDs XXX should come with the firmware image...
+            DEVICE_ID_LORA_MAV = 0x17,
+            DEVICE_ID_SKY_DB30 = 0x15,
             DEVICE_ID_RF50 = 0x4d,
             DEVICE_ID_HM_TRP = 0x4e,
             DEVICE_ID_RFD900 = 0X42,
             DEVICE_ID_RFD900A = 0X43,
-
-            DEVICE_ID_HB1060 = 0X50,
 
             DEVICE_ID_RFD900U = 0X80 | 0x01,
             DEVICE_ID_RFD900P = 0x80 | 0x02,
@@ -134,13 +133,13 @@ namespace MissionPlanner.Radio
 
         private void upload_and_verify(IHex image_data)
         {
-            if (image_data.bankingDetected && ((byte)id & 0x80) != 0x80)
+            if (image_data.bankingDetected && ((byte)id & 0x80) != 0x80 && id != Board.DEVICE_ID_LORA_MAV)
             {
                 log("This Firmware requires banking support");
                 throw new Exception("This Firmware requires banking support");
             }
 
-            if (((byte)id & 0x80) == 0x80)
+            if (((byte)id & 0x80) == 0x80 || id == Board.DEVICE_ID_LORA_MAV)
             {
                 banking = true;
                 log("Using 24bit addresses");
@@ -200,13 +199,19 @@ namespace MissionPlanner.Radio
             int to_send;
             var length = data.GetLength(0);
 
+            int MAX_WRITE_BYTE = 0;
+
+            if (id == Board.DEVICE_ID_LORA_MAV)
+                MAX_WRITE_BYTE = 64;
+            else
+                MAX_WRITE_BYTE = PROG_MULTI_MAX;
             // Chunk the block in units of no more than what the bootloader
             // will program.
             while (offset < length)
             {
                 to_send = length - offset;
-                if (to_send > PROG_MULTI_MAX)
-                    to_send = PROG_MULTI_MAX;
+                if (to_send > MAX_WRITE_BYTE)
+                    to_send = MAX_WRITE_BYTE;
 
                 log(string.Format("multi {0}/{1}\n", offset, to_send), 1);
                 cmdProgramMulti(data, offset, to_send);
@@ -387,7 +392,9 @@ namespace MissionPlanner.Radio
             log("Connected to board " + id + " freq " + freq);
 
             // XXX should be getting valid board/frequency data from firmware file
-            if (!Enum.IsDefined(typeof(Board), id))
+            if ((id != Board.DEVICE_ID_HM_TRP) && (id != Board.DEVICE_ID_RF50) && (id != Board.DEVICE_ID_RFD900) &&
+                (id != Board.DEVICE_ID_RFD900A) && (id != Board.DEVICE_ID_RFD900P) && (id != Board.DEVICE_ID_RFD900U) &&
+                (id != Board.DEVICE_ID_LORA_MAV))
                 throw new Exception("bootloader device ID mismatch - device:" + id);
 
             getSync();

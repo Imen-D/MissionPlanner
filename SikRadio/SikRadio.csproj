@@ -6,11 +6,13 @@
     <ProjectGuid>{B8943726-04B0-4477-BFDA-E156A0CD98A4}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SikRadio</RootNamespace>
-    <AssemblyName>SikRadio</AssemblyName>
+    <RootNamespace>LoRaMav</RootNamespace>
+    <AssemblyName>LoRaMav</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -25,11 +27,9 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>sik.ico</ApplicationIcon>
+    <ApplicationIcon>icon_white.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <PlatformTarget>x86</PlatformTarget>
@@ -51,7 +51,8 @@
     <CodeAnalysisRuleSet />
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject />
+    <StartupObject>
+    </StartupObject>
   </PropertyGroup>
   <PropertyGroup>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -251,6 +252,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="icon_E70_icon.ico" />
+    <Content Include="icon_white.ico" />
     <Content Include="Resources\sikico.png" />
     <Content Include="sik.ico" />
     <Content Include="ChangeLog.txt">
@@ -260,7 +263,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="log4net">
-      <Version>2.0.12</Version>
+      <Version>2.0.8</Version>
     </PackageReference>
     <PackageReference Include="SkiaSharp.Views">
       <Version>1.68.1.1</Version>

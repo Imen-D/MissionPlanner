@@ -1,7 +1,7 @@
-﻿using System;
+﻿using MissionPlanner.Radio;
+using System;
 using System.Collections.Generic;
 using System.Threading;
-using MissionPlanner.Radio;
 
 namespace RFD.RFD900
 {
@@ -601,14 +601,14 @@ namespace RFD.RFD900
                     {
                         return null;
                     }
-                    
+
                 }
                 if (Line[n] != '=')
                 {
                     return null;
                 }
                 n++;
-                
+
                 int Value;
                 if (!ParseValue(Line, ref n, out Value))
                 {
@@ -630,7 +630,7 @@ namespace RFD.RFD900
                     }
                 }
 
-                return new TSetting(Designator, Name, Range, Value, 
+                return new TSetting(Designator, Name, Range, Value,
                     CreateOptions(Range, Options, Name), GetIncrement(Name));
             }
             catch
@@ -658,7 +658,7 @@ namespace RFD.RFD900
                         new int[] { 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800 });
                 default:
                     return GetBaudRateOptionsGivenRawBaudRates(
-                        new int[] { 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200});
+                        new int[] { 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200 });
             }
         }
 
@@ -951,9 +951,19 @@ namespace RFD.RFD900
                     return new RFD900old(Session);
                 case Uploader.Board.DEVICE_ID_HM_TRP:
                     return new HM_TRP(Session);
-                case Uploader.Board.DEVICE_ID_HB1060:
-                    return new HB1060(Session);
-                default:
+                case Uploader.Board.DEVICE_ID_SKY_DB30:
+                    return new NGSLN(Session);
+                case Uploader.Board.DEVICE_ID_LORA_MAV:
+                    {
+                        if (Freq == Uploader.Frequency.FREQ_433)
+                            return new LORA_MAV433(Session);
+                        if (Freq == Uploader.Frequency.FREQ_868)
+                            return new LORA_MAV868(Session);
+                        if (Freq == Uploader.Frequency.FREQ_915)
+                            return new LORA_MAV915(Session);
+                        return null;
+                    }
+                 default:
                     return null;
             }
         }
@@ -1002,26 +1012,6 @@ namespace RFD.RFD900
             }
         }
     }
-
-    public class HB1060 : RFD900APU
-    {
-        public HB1060(TSession Session) : base(Session)
-        {
-        }
-
-        protected override string[] GetFirmwareSearchTokens()
-        {
-            return new string[] { "HB1060" };
-        }
-
-        public override Uploader.Board Board
-        {
-            get
-            {
-                return Uploader.Board.DEVICE_ID_HB1060;
-            }
-        }
-    } 
     public class HM_TRP : RFD900APU
     {
         public HM_TRP(TSession Session)
@@ -1043,7 +1033,93 @@ namespace RFD.RFD900
             }
         }
     }
+    public class NGSLN : RFD900APU
+    {
+        public NGSLN(TSession Session)
+            : base(Session)
+        {
 
+        }
+
+        protected override string[] GetFirmwareSearchTokens()
+        {
+            return new string[] { "SKY-DB30" };
+        }
+
+        public override Uploader.Board Board
+        {
+            get
+            {
+                return Uploader.Board.DEVICE_ID_SKY_DB30;
+            }
+        }
+    }
+
+    public class LORA_MAV915 : RFD900APU
+    {
+        public LORA_MAV915(TSession Session)
+            : base(Session)
+        {
+
+        }
+
+        protected override string[] GetFirmwareSearchTokens()
+        {
+            return new string[] { "SE-LINK915" };
+        }
+
+        public override Uploader.Board Board
+        {
+            get
+            {
+                return Uploader.Board.DEVICE_ID_LORA_MAV;
+            }
+        }
+    }
+
+    public class LORA_MAV433 : RFD900APU
+    {
+        public LORA_MAV433(TSession Session)
+            : base(Session)
+        {
+
+        }
+
+        protected override string[] GetFirmwareSearchTokens()
+        {
+            return new string[] { "SE-LINK433" };
+        }
+
+        public override Uploader.Board Board
+        {
+            get
+            {
+                return Uploader.Board.DEVICE_ID_LORA_MAV;
+            }
+        }
+    }
+
+    public class LORA_MAV868 : RFD900APU
+    {
+        public LORA_MAV868(TSession Session)
+            : base(Session)
+        {
+
+        }
+
+        protected override string[] GetFirmwareSearchTokens()
+        {
+            return new string[] { "SE-LINK868" };
+        }
+
+        public override Uploader.Board Board
+        {
+            get
+            {
+                return Uploader.Board.DEVICE_ID_LORA_MAV;
+            }
+        }
+    }
 
     public class RFD900p : RFD900APU
     {
