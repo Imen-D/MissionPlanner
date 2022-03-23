@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -114,6 +115,63 @@ namespace MissionPlanner.Utilities
             });
 
             return tsk.GetAwaiter().GetResult();
+        }
+
+        public static void InsertSorted<T>(this Collection<T> collection, T item)
+            where T : IComparable<T>
+        {
+            InsertSorted(collection, item, Comparer<T>.Create((x, y) => x.CompareTo(y)));
+        }
+
+        //https://stackoverflow.com/questions/12172162/how-to-insert-item-into-list-in-order
+        public static void InsertSorted<T>(this Collection<T> collection, T item, IComparer<T> comparerFunction)
+        {
+            if (collection.Count == 0)
+            {
+                collection.Add(item);
+                return;
+            }
+            else if (collection.Contains(item))
+            {
+                return;
+            }
+            else if (comparerFunction.Compare(item, collection[collection.Count - 1]) >= 0)
+            {
+                // Add to the end as the item being added is greater than the last item by comparison.
+                collection.Add(item);
+            }
+            else if (comparerFunction.Compare(item, collection[0]) <= 0)
+            {
+                // Add to the front as the item being added is less than the first item by comparison.
+                collection.Insert(0, item);
+            }
+            else
+            {
+                // Otherwise, search for the place to insert.
+                int index = 0;
+                {
+                    for (int i = 0; i < collection.Count; i++)
+                    {
+                        if (comparerFunction.Compare(collection[i], item) >= 0)
+                        {
+                            // If the item is the same or before, then the insertion point is here.
+                            index = i;
+                            break;
+                        }
+
+                        // Otherwise loop. We're already tested the last element for greater than count.
+                    }
+                }
+
+                if (index < 0)
+                {
+                    // The zero-based index of item if item is found,
+                    // otherwise, a negative number that is the bitwise complement of the index of the next element that is larger than item or, if there is no larger element, the bitwise complement of Count.
+                    index = ~index;
+                }
+
+                collection.Insert(index, item);
+            }
         }
 
         public static IEnumerable<IEnumerable<T>> Chunk<T>(this IEnumerable<T> source, int chunksize)
@@ -755,6 +813,28 @@ namespace MissionPlanner.Utilities
             }
         }
 
+        public static List<PointLatLngAlt> Interpolate(this List<PointLatLngAlt> list)
+        {
+            var ans = new List<PointLatLngAlt>();
+            var count = list.Count();
+
+            for (int a = 0; a < count - 1; a++)
+            {                
+                var now = list[a];
+                var next = list[a + 1];
+
+                ans.Add(now);
+
+                for(float b = 0.1f; b < 1; b += 0.2f)
+                {
+                    ans.Add(now.GetGreatCirclePathPoint(next, b));
+                }
+                ans.Add(next);
+            }
+
+            return ans;
+        }
+
         public static object GetPropertyOrField(this object obj, string name)
         {
             var type = obj.GetType();
@@ -981,6 +1061,25 @@ namespace MissionPlanner.Utilities
             }
 
             return (input / 1024 / 1024) + "MB";
+        }
+
+        public static IEnumerable<(int, int)> SimplifyIntervals(this IEnumerable<(int, int)> intervals)
+        {
+            var ordered = intervals.OrderBy(x => x.Item1);
+            var initialList = new List<(int, int)> { ordered.First() };
+            var simplifiedIntervals = ordered.Aggregate(initialList, (previousList, candidate) =>
+            {
+                var last = previousList.Last();
+                if (candidate.Item1 <= last.Item2)
+                {
+                    var toAdd = (Math.Min(last.Item1, candidate.Item1), Math.Max(last.Item2, candidate.Item2));
+                    return previousList.Take(previousList.Count() - 1).Concat(new[] { toAdd }).ToList();
+                }
+
+                return previousList.Concat(new[] { candidate }).ToList();
+            });
+
+            return simplifiedIntervals;
         }
 
         /*

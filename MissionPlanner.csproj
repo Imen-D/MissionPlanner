@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <ProjectGuid>{A2E22272-95FE-47B6-B050-9AE7E2055BF5}</ProjectGuid>
     <ApplicationIcon>mpdesktop.ico</ApplicationIcon>
     <OutputType>Exe</OutputType>
@@ -98,7 +98,12 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Entity" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.Compression.FileSystem">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Management" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
@@ -4954,11 +4959,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Reference Update="System.IO.Compression.FileSystem">
-      <Private>true</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4.6.1 %28x86 and x64%29</ProductName>
@@ -4979,4 +4979,7 @@
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy $(ProjectDir)\ExtLibs\System.IO.Compression.dll $(ProjectDir)$(OutDir)</PostBuildEvent>
+  </PropertyGroup>
 </Project>

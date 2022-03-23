@@ -24,6 +24,7 @@ jobs:
         with:
           path: |
             **/obj
+            !**.apk
           key: ${{ runner.os }}-buildAAB
 
       - name: Build
@@ -78,6 +79,24 @@ jobs:
           track: internal
           whatsNewDirectory: whatsnew
 
+
+  buildAPK:
+    name: Build Release APK
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 10
+
+      - name: Cache multiple paths
+        uses: actions/cache@v2
+        with:
+          path: |
+            **/obj
+            !**.apk
+          key: ${{ runner.os }}-buildAPK
       - name: Build
         shell: pwsh
         run: |
@@ -101,11 +120,32 @@ jobs:
           
           msbuild -v:m -restore -t:SignAndroidPackage -p:Configuration=Release "ExtLibs\Xamarin\Xamarin.Android\Xamarin.Android.csproj"
           
+          del ExtLibs\Xamarin\Xamarin.Android\bin\Release\*-Signed.apk
+          
+          $apks = Get-ChildItem -include *.apk -path ExtLibs\Xamarin\Xamarin.Android\bin\Release\ -Recurse
+          
+          ForEach($i in $apks) {
+            echo $i.FullName
+            Move-Item -path $i.FullName temp.apk
+            C:\Android\android-sdk\build-tools\29.0.3\zipalign.exe -p -f -v 4 temp.apk $i.FullName
+            Remove-Item temp.apk
+          }
+
+      - name: Sign APK
+        if: ${{ github.event_name == 'push' }}
+        id: sign2
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: ExtLibs\Xamarin\Xamarin.Android\bin\Release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
 
       - uses: actions/upload-artifact@v2
         with:
           name: com.michaeloborne.MissionPlanner.apk.zip
-          path: ExtLibs\Xamarin\Xamarin.Android\bin\Release\*-Signed.apk
+          path: ExtLibs\Xamarin\Xamarin.Android\bin\Release\*-signed.apk
           
       - uses: "marvinpinto/action-automatic-releases@v1.2.1"
         if: ${{ github.event_name == 'push' }}
@@ -114,5 +154,5 @@ jobs:
           automatic_release_tag: "latest"
           prerelease: true
           title: "Android Development Build"
-          files: '**/*-Signed.apk'
+          files: '**/*-signed.apk'
 

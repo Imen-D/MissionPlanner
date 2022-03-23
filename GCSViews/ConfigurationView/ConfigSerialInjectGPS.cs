@@ -501,7 +501,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                     msgseen[msgname] = 0;
                 msgseen[msgname] = (int) msgseen[msgname] + 1;
 
-                if (frame.MsgTypeID == (ushort)DroneCAN.DroneCAN.UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_DT_ID)
+                if (frame.MsgTypeID == (ushort)DroneCAN.DroneCAN.uavcan_equipment_gnss_RTCMStream.UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_DT_ID)
                 {
                     var rtcm = (DroneCAN.DroneCAN.uavcan_equipment_gnss_RTCMStream) msg;
 
@@ -654,7 +654,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                                 msgseen[msgname] = (int)msgseen[msgname] + 1;
                             }
                             // can_rtcm
-                            if ((seenmsg = can.Read(buffer[a])) > 0)
+                            if ((seenmsg = can.ReadSLCAN(buffer[a])) > 0)
                             {
                                 sbp.resetParser();
                                 ubx_m8p.resetParser();

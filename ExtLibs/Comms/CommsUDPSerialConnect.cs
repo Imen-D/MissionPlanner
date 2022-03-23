@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using log4net;
 
 // dns, ip address
@@ -68,6 +69,57 @@ namespace MissionPlanner.Comms
 
         public bool DtrEnable { get; set; }
 
+        public void Open(string host, string port)
+        {
+            Port = port;
+
+            OnSettings("UDP_port" + ConfigRef, Port, true);
+            OnSettings("UDP_host" + ConfigRef, host, true);
+
+            IPAddress addr;
+
+            if (IPAddress.TryParse(host, out addr))
+            {
+                hostEndPoint = new IPEndPoint(addr, int.Parse(Port));
+            }
+            else
+            {
+                hostEndPoint = new IPEndPoint(Dns.GetHostEntry(host).AddressList.First(), int.Parse(Port));
+            }
+
+            if (IsInRange("224.0.0.0", "239.255.255.255", hostEndPoint.Address.ToString()))
+            {
+                log.Info($"UdpSerialConnect bind to port {Port}");
+                client = new UdpClient(int.Parse(Port));
+
+                IsOpen = true;
+
+                Task.Run(() => {
+                    while (IsOpen)
+                    {
+                        log.Info($"UdpSerialConnect join multicast group {host}");
+                        try
+                        {
+                            client.JoinMulticastGroup(IPAddress.Parse(host));
+                        } catch { return; }
+
+                        Thread.Sleep(30 * 1000);
+                    }
+                });
+                log.Info($"UdpSerialConnect default endpoint {hostEndPoint}");
+                client.Connect(hostEndPoint);
+            }
+            else
+            {
+                client = new UdpClient();
+                client.Connect(hostEndPoint);
+            }
+
+            IsOpen = true;
+
+            VerifyConnected();
+        }
+
         public void Open()
         {
             if (client.Client.Connected)
@@ -94,36 +146,7 @@ namespace MissionPlanner.Comms
                     throw new Exception("Canceled by request");
             }
 
-            Port = dest;
-
-            OnSettings("UDP_port" + ConfigRef, Port, true);
-            OnSettings("UDP_host" + ConfigRef, host, true);
-
-            IPAddress addr;
-
-            if (IPAddress.TryParse(host, out addr))
-            {
-                hostEndPoint = new IPEndPoint(addr, int.Parse(Port));
-            }
-            else
-            {
-                hostEndPoint = new IPEndPoint(Dns.GetHostEntry(host).AddressList.First(), int.Parse(Port));
-            }
-
-            if (IsInRange("224.0.0.0", "239.255.255.255", hostEndPoint.Address.ToString()))
-            {
-                client = new UdpClient(int.Parse(Port));
-                client.JoinMulticastGroup(IPAddress.Parse(host));
-            }
-            else
-            {
-                client = new UdpClient();
-                client.Connect(hostEndPoint);
-            }
-
-            IsOpen = true;
-
-            VerifyConnected();
+            Open(host, dest);
         }
 
         public static bool IsInRange(string startIpAddr, string endIpAddr, string address)

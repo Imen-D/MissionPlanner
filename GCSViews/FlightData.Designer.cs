@@ -28,6 +28,7 @@ namespace MissionPlanner.GCSViews
             this.swapWithMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groundColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.setBatteryCellCountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showIconsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bindingSourceHud = new System.Windows.Forms.BindingSource(this.components);
             this.tabControlactions = new System.Windows.Forms.TabControl();
             this.contextMenuStripactionstab = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -213,7 +214,7 @@ namespace MissionPlanner.GCSViews
             this.scriptChecker = new System.Windows.Forms.Timer(this.components);
             this.Messagetabtimer = new System.Windows.Forms.Timer(this.components);
             this.bindingSourceStatusTab = new System.Windows.Forms.BindingSource(this.components);
-            this.showIconsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.multiLineToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.MainH)).BeginInit();
             this.MainH.Panel1.SuspendLayout();
             this.MainH.Panel2.SuspendLayout();
@@ -358,6 +359,7 @@ namespace MissionPlanner.GCSViews
             this.hud1.datetime = new System.DateTime(((long)(0)));
             this.hud1.displayAOASSA = false;
             this.hud1.displayCellVoltage = false;
+            this.hud1.displayicons = false;
             this.hud1.disttowp = 0F;
             this.hud1.distunit = null;
             resources.ApplyResources(this.hud1, "hud1");
@@ -513,6 +515,12 @@ namespace MissionPlanner.GCSViews
             resources.ApplyResources(this.setBatteryCellCountToolStripMenuItem, "setBatteryCellCountToolStripMenuItem");
             this.setBatteryCellCountToolStripMenuItem.Click += new System.EventHandler(this.setBatteryCellCountToolStripMenuItem_Click);
             // 
+            // showIconsToolStripMenuItem
+            // 
+            this.showIconsToolStripMenuItem.Name = "showIconsToolStripMenuItem";
+            resources.ApplyResources(this.showIconsToolStripMenuItem, "showIconsToolStripMenuItem");
+            this.showIconsToolStripMenuItem.Click += new System.EventHandler(this.showIconsToolStripMenuItem_Click);
+            // 
             // bindingSourceHud
             // 
             this.bindingSourceHud.DataSource = typeof(MissionPlanner.CurrentState);
@@ -542,7 +550,8 @@ namespace MissionPlanner.GCSViews
             // contextMenuStripactionstab
             // 
             this.contextMenuStripactionstab.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.customizeToolStripMenuItem});
+            this.customizeToolStripMenuItem,
+            this.multiLineToolStripMenuItem});
             this.contextMenuStripactionstab.Name = "contextMenuStripactionstab";
             resources.ApplyResources(this.contextMenuStripactionstab, "contextMenuStripactionstab");
             // 
@@ -762,7 +771,7 @@ namespace MissionPlanner.GCSViews
             // 
             resources.ApplyResources(this.CMB_action, "CMB_action");
             this.CMB_action.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.CMB_action.DropDownWidth = 150;
+            this.CMB_action.DropDownWidth = 250;
             this.CMB_action.FormattingEnabled = true;
             this.CMB_action.Name = "CMB_action";
             // 
@@ -2600,7 +2609,7 @@ namespace MissionPlanner.GCSViews
             // 
             // ZedGraphTimer
             // 
-            this.ZedGraphTimer.Tick += new System.EventHandler(this.timer1_Tick);
+            this.ZedGraphTimer.Tick += new System.EventHandler(this.ZedGraphTimer_Tick);
             // 
             // toolTip1
             // 
@@ -2624,11 +2633,11 @@ namespace MissionPlanner.GCSViews
             // 
             this.bindingSourceStatusTab.DataSource = typeof(MissionPlanner.CurrentState);
             // 
-            // showIconsToolStripMenuItem
+            // multiLineToolStripMenuItem
             // 
-            this.showIconsToolStripMenuItem.Name = "showIconsToolStripMenuItem";
-            resources.ApplyResources(this.showIconsToolStripMenuItem, "showIconsToolStripMenuItem");
-            this.showIconsToolStripMenuItem.Click += new System.EventHandler(this.showIconsToolStripMenuItem_Click);
+            this.multiLineToolStripMenuItem.Name = "multiLineToolStripMenuItem";
+            resources.ApplyResources(this.multiLineToolStripMenuItem, "multiLineToolStripMenuItem");
+            this.multiLineToolStripMenuItem.Click += new System.EventHandler(this.multiLineToolStripMenuItem_Click);
             // 
             // FlightData
             // 
@@ -2915,5 +2924,6 @@ namespace MissionPlanner.GCSViews
         private System.Windows.Forms.TextBox NACp_tb;
         private System.Windows.Forms.TextBox NIC_tb;
         private ToolStripMenuItem showIconsToolStripMenuItem;
+        private ToolStripMenuItem multiLineToolStripMenuItem;
     }
 }

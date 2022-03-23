@@ -544,6 +544,7 @@ namespace MissionPlanner.ArduPilot.Mavlink
         public MemoryStream GetFile(string file, CancellationTokenSource cancel, bool burst = true, byte readsize = 0)
         {
             log.InfoFormat("GetFile {0}-{1} {2}", _sysid, _compid, file);
+            Progress?.Invoke("Opening file " + file, -1);
             kCmdOpenFileRO(file, out var size, cancel);
             if (size == -1)
                 return null;
@@ -578,7 +579,7 @@ namespace MissionPlanner.ArduPilot.Mavlink
             };
             fileTransferProtocol.payload = payload;
             log.Info("get " + payload.opcode + " " + file);
-            var timeout = new RetryTimeout();
+            var timeout = new RetryTimeout(5, 2000);
             size = -1;
             Exception ex = null;
             var localsize = size;
@@ -660,6 +661,7 @@ namespace MissionPlanner.ArduPilot.Mavlink
             size = localsize;
             if (ex != null)
                 throw ex;
+            Progress?.Invoke("Opened " + file + " " + ans, -1);
             return ans;
         }
 
@@ -679,6 +681,7 @@ namespace MissionPlanner.ArduPilot.Mavlink
             };
             fileTransferProtocol.payload = payload;
             log.Info("get " + payload.opcode + " " + file + " " + size);
+            Progress?.Invoke(file, 0);
             Exception ex = null;
             SortedList<uint, uint> chunkSortedList = new SortedList<uint, uint>();
             MemoryStream answer = new MemoryStream(size);
@@ -1385,6 +1388,7 @@ namespace MissionPlanner.ArduPilot.Mavlink
             };
             fileTransferProtocol.payload = payload;
             log.Info("get " + payload.ToJSON() + " " + file + " " + size);
+            Progress?.Invoke(file, 0);
             Exception ex = null;
             MemoryStream answer = new MemoryStream(size);
             sub = _mavint.SubscribeToPacketType(MAVLink.MAVLINK_MSG_ID.FILE_TRANSFER_PROTOCOL, message =>
@@ -1478,6 +1482,8 @@ namespace MissionPlanner.ArduPilot.Mavlink
             Progress?.Invoke(file, 100);
             _mavint.UnSubscribeToPacketType(sub);
             answer.Position = 0;
+            if (!timeout.Complete)
+                return null;
             if (ex != null)
                 throw ex;
             return answer;
@@ -2182,8 +2188,14 @@ namespace MissionPlanner.ArduPilot.Mavlink
             static public implicit operator byte[](FTPPayloadHeader value)
             {
                 if (value.data == null)
+                {
                     value.data = new byte[251 - 12];
-                value.size = (byte) (value.data.Length);
+                }
+                else 
+                {
+                    value.size = (byte)(value.data.Length);
+                }
+                               
                 value.data = value.data.MakeSize(251 - 12);
                 return MavlinkUtil.StructureToByteArray(value);
             }

@@ -222,42 +222,42 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                             DroneCAN.DroneCAN.uavcan_protocol_GetNodeInfo_req gnireq = new DroneCAN.DroneCAN.uavcan_protocol_GetNodeInfo_req() { };
                             gnireq.encode(DroneCAN.DroneCAN.dronecan_transmit_chunk_handler, statetracking);
 
-                            var slcan = can.PackageMessage(frame.SourceNode, 30, 0, gnireq);
-                            can.WriteToStream(slcan);
+                            var slcan = can.PackageMessageSLCAN(frame.SourceNode, 30, 0, gnireq);
+                            can.WriteToStreamSLCAN(slcan);
                         }
 
                         foreach (var item in nodes)
                         {
                             switch (ns.health)
                             {
-                                case (byte)DroneCAN.DroneCAN.UAVCAN_PROTOCOL_NODESTATUS_HEALTH_OK:
+                                case (byte)DroneCAN.DroneCAN.uavcan_protocol_NodeStatus.UAVCAN_PROTOCOL_NODESTATUS_HEALTH_OK:
                                     item.Health = "OK";
                                     break;
-                                case (byte)DroneCAN.DroneCAN.UAVCAN_PROTOCOL_NODESTATUS_HEALTH_WARNING:
+                                case (byte)DroneCAN.DroneCAN.uavcan_protocol_NodeStatus.UAVCAN_PROTOCOL_NODESTATUS_HEALTH_WARNING:
                                     item.Health = "WARNING";
                                     break;
-                                case (byte)DroneCAN.DroneCAN.UAVCAN_PROTOCOL_NODESTATUS_HEALTH_ERROR:
+                                case (byte)DroneCAN.DroneCAN.uavcan_protocol_NodeStatus.UAVCAN_PROTOCOL_NODESTATUS_HEALTH_ERROR:
                                     item.Health = "ERROR";
                                     break;
-                                case (byte)DroneCAN.DroneCAN.UAVCAN_PROTOCOL_NODESTATUS_HEALTH_CRITICAL:
+                                case (byte)DroneCAN.DroneCAN.uavcan_protocol_NodeStatus.UAVCAN_PROTOCOL_NODESTATUS_HEALTH_CRITICAL:
                                     item.Health = "CRITICAL";
                                     break;
                             }
                             switch (ns.mode)
                             {
-                                case (byte)DroneCAN.DroneCAN.UAVCAN_PROTOCOL_NODESTATUS_MODE_OPERATIONAL:
+                                case (byte)DroneCAN.DroneCAN.uavcan_protocol_NodeStatus.UAVCAN_PROTOCOL_NODESTATUS_MODE_OPERATIONAL:
                                     item.Mode = "OPERATIONAL";
                                     break;
-                                case (byte)DroneCAN.DroneCAN.UAVCAN_PROTOCOL_NODESTATUS_MODE_INITIALIZATION:
+                                case (byte)DroneCAN.DroneCAN.uavcan_protocol_NodeStatus.UAVCAN_PROTOCOL_NODESTATUS_MODE_INITIALIZATION:
                                     item.Mode = "INITIALIZATION";
                                     break;
-                                case (byte)DroneCAN.DroneCAN.UAVCAN_PROTOCOL_NODESTATUS_MODE_MAINTENANCE:
+                                case (byte)DroneCAN.DroneCAN.uavcan_protocol_NodeStatus.UAVCAN_PROTOCOL_NODESTATUS_MODE_MAINTENANCE:
                                     item.Mode = "MAINTENANCE";
                                     break;
-                                case (byte)DroneCAN.DroneCAN.UAVCAN_PROTOCOL_NODESTATUS_MODE_SOFTWARE_UPDATE:
+                                case (byte)DroneCAN.DroneCAN.uavcan_protocol_NodeStatus.UAVCAN_PROTOCOL_NODESTATUS_MODE_SOFTWARE_UPDATE:
                                     item.Mode = "SOFTWARE_UPDATE";
                                     break;
-                                case (byte)DroneCAN.DroneCAN.UAVCAN_PROTOCOL_NODESTATUS_MODE_OFFLINE:
+                                case (byte)DroneCAN.DroneCAN.uavcan_protocol_NodeStatus.UAVCAN_PROTOCOL_NODESTATUS_MODE_OFFLINE:
                                     item.Mode = "OFFLINE";
                                     break;
                             }
@@ -558,7 +558,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                             DroneCAN.DroneCAN.MessageRecievedDel mrd =  (frame, msg, id) =>
                             {
                                 combps += frame.SizeofEntireMsg;
-                                if (frame.MsgTypeID == DroneCAN.DroneCAN.UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_DT_ID)
+                                if (frame.MsgTypeID == DroneCAN.DroneCAN.uavcan_equipment_gnss_RTCMStream.UAVCAN_EQUIPMENT_GNSS_RTCMSTREAM_DT_ID)
                                 {
                                     var data = msg as DroneCAN.DroneCAN.uavcan_equipment_gnss_RTCMStream;
                                     try
@@ -573,7 +573,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                                     }
                                 }
 
-                                if (frame.MsgTypeID == DroneCAN.DroneCAN.ARDUPILOT_GNSS_MOVINGBASELINEDATA_DT_ID)
+                                if (frame.MsgTypeID == DroneCAN.DroneCAN.ardupilot_gnss_MovingBaselineData.ARDUPILOT_GNSS_MOVINGBASELINEDATA_DT_ID)
                                 {
                                     var data = msg as DroneCAN.DroneCAN.ardupilot_gnss_MovingBaselineData;
                                     try
@@ -608,10 +608,10 @@ namespace MissionPlanner.GCSViews.ConfigurationView
 
                                         Console.WriteLine();
                                         tcpbps += read;
-                                        var slcan = can.PackageMessage(0, 30, 0,
+                                        var slcan = can.PackageMessageSLCAN(0, 30, 0,
                                             new DroneCAN.DroneCAN.uavcan_equipment_gnss_RTCMStream()
                                                 {protocol_id = 3, data = buffer, data_len = (byte) read});
-                                        can.WriteToStream(slcan);
+                                        can.WriteToStreamSLCAN(slcan);
                                     }
 
                                     Thread.Sleep(1);
