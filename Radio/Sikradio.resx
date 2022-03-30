@@ -730,7 +730,7 @@ red LED solid - in firmware update mode</value>
     <value>NoControl</value>
   </data>
   <data name="RGPI1_1R_CIN.Location" type="System.Drawing.Point, System.Drawing">
-    <value>88, 297</value>
+    <value>102, 297</value>
   </data>
   <data name="RGPI1_1R_CIN.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 20</value>
@@ -992,7 +992,7 @@ red LED solid - in firmware update mode</value>
     <value>NoControl</value>
   </data>
   <data name="ROPPRESEND.Location" type="System.Drawing.Point, System.Drawing">
-    <value>88, 271</value>
+    <value>102, 271</value>
   </data>
   <data name="ROPPRESEND.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 20</value>
@@ -1510,7 +1510,7 @@ red LED solid - in firmware update mode</value>
     <value>NoControl</value>
   </data>
   <data name="GPI1_1R_CIN.Location" type="System.Drawing.Point, System.Drawing">
-    <value>96, 297</value>
+    <value>110, 297</value>
   </data>
   <data name="GPI1_1R_CIN.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 20</value>
@@ -1799,7 +1799,7 @@ red LED solid - in firmware update mode</value>
     <value>NoControl</value>
   </data>
   <data name="OPPRESEND.Location" type="System.Drawing.Point, System.Drawing">
-    <value>96, 271</value>
+    <value>110, 271</value>
   </data>
   <data name="OPPRESEND.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 20</value>
@@ -1822,39 +1822,6 @@ red LED solid - in firmware update mode</value>
   </data>
   <data name="&gt;&gt;OPPRESEND.ZOrder" xml:space="preserve">
     <value>31</value>
-  </data>
-  <data name="BUT_SetPPMFailSafe.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="BUT_SetPPMFailSafe.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="BUT_SetPPMFailSafe.Location" type="System.Drawing.Point, System.Drawing">
-    <value>551, 411</value>
-  </data>
-  <data name="BUT_SetPPMFailSafe.Size" type="System.Drawing.Size, System.Drawing">
-    <value>102, 29</value>
-  </data>
-  <data name="BUT_SetPPMFailSafe.TabIndex" type="System.Int32, mscorlib">
-    <value>86</value>
-  </data>
-  <data name="BUT_SetPPMFailSafe.Text" xml:space="preserve">
-    <value>Set PPM Fail Safe</value>
-  </data>
-  <data name="BUT_SetPPMFailSafe.ToolTip" xml:space="preserve">
-    <value>Record default PPM stream for PPM output (vehicle side)</value>
-  </data>
-  <data name="&gt;&gt;BUT_SetPPMFailSafe.Name" xml:space="preserve">
-    <value>BUT_SetPPMFailSafe</value>
-  </data>
-  <data name="&gt;&gt;BUT_SetPPMFailSafe.Type" xml:space="preserve">
-    <value>MissionPlanner.Controls.MyButton, MissionPlanner.Controls, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
-  </data>
-  <data name="&gt;&gt;BUT_SetPPMFailSafe.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;BUT_SetPPMFailSafe.ZOrder" xml:space="preserve">
-    <value>1</value>
   </data>
   <data name="RTI.Location" type="System.Drawing.Point, System.Drawing">
     <value>60, 12</value>
@@ -4814,6 +4781,39 @@ this ensures you wont lose radio link</value>
   </data>
   <data name="&gt;&gt;label10.ZOrder" xml:space="preserve">
     <value>5</value>
+  </data>
+  <data name="BUT_SetPPMFailSafe.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="BUT_SetPPMFailSafe.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="BUT_SetPPMFailSafe.Location" type="System.Drawing.Point, System.Drawing">
+    <value>551, 411</value>
+  </data>
+  <data name="BUT_SetPPMFailSafe.Size" type="System.Drawing.Size, System.Drawing">
+    <value>102, 29</value>
+  </data>
+  <data name="BUT_SetPPMFailSafe.TabIndex" type="System.Int32, mscorlib">
+    <value>86</value>
+  </data>
+  <data name="BUT_SetPPMFailSafe.Text" xml:space="preserve">
+    <value>Set PPM Fail Safe</value>
+  </data>
+  <data name="BUT_SetPPMFailSafe.ToolTip" xml:space="preserve">
+    <value>Record default PPM stream for PPM output (vehicle side)</value>
+  </data>
+  <data name="&gt;&gt;BUT_SetPPMFailSafe.Name" xml:space="preserve">
+    <value>BUT_SetPPMFailSafe</value>
+  </data>
+  <data name="&gt;&gt;BUT_SetPPMFailSafe.Type" xml:space="preserve">
+    <value>MissionPlanner.Controls.MyButton, MissionPlanner.Controls, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;BUT_SetPPMFailSafe.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;BUT_SetPPMFailSafe.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="BUT_loadcustom.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
