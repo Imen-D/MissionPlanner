@@ -980,6 +980,8 @@ S15: MAX_WINDOW=131
             label33.Text = "RTS CTS";
             label8.Text = "Op Resend";
             label25.Text = "Op Resend";
+            label17.Text = "LBT Rssi";
+            label20.Text = "LBT Rssi";
 
             label43.Visible = label44.Visible = false;
             BANDWIDTH.Visible = RBANDWIDTH.Visible = false;
@@ -1159,6 +1161,8 @@ S15: MAX_WINDOW=131
                         label33.Text = "Preamble Len";
                         label8.Text = "Invert IQ";
                         label25.Text = "Invert IQ";
+                        label17.Text = "Auto rate";
+                        label20.Text = "Auto rate";
                         // change control settings
                         ECC.Enabled = false;
                         ECC.Visible = false;
@@ -1733,6 +1737,7 @@ S15: MAX_WINDOW=131
             RCODING_RATE.Text = CODING_RATE.Text;
             RPREAMBLE_LEN.Text = PREAMBLE_LEN.Text;
             RBANDWIDTH.Text = BANDWIDTH.Text;
+            RLBT_RSSI.Text = LBT_RSSI.Text;
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

@@ -408,6 +408,7 @@
             // 
             // RNETID
             // 
+            this.RNETID.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             resources.ApplyResources(this.RNETID, "RNETID");
             this.RNETID.FormattingEnabled = true;
             this.RNETID.Name = "RNETID";
@@ -652,6 +653,7 @@
             // 
             // NETID
             // 
+            this.NETID.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             resources.ApplyResources(this.NETID, "NETID");
             this.NETID.FormattingEnabled = true;
             this.NETID.Name = "NETID";
