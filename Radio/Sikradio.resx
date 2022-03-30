@@ -540,7 +540,7 @@ red LED solid - in firmware update mode</value>
     <value>100</value>
   </data>
   <data name="RDUTY_CYCLE.Location" type="System.Drawing.Point, System.Drawing">
-    <value>266, 162</value>
+    <value>266, 163</value>
   </data>
   <data name="RDUTY_CYCLE.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 24</value>
@@ -588,7 +588,7 @@ red LED solid - in firmware update mode</value>
     <value>250</value>
   </data>
   <data name="RLBT_RSSI.Location" type="System.Drawing.Point, System.Drawing">
-    <value>266, 189</value>
+    <value>266, 190</value>
   </data>
   <data name="RLBT_RSSI.Size" type="System.Drawing.Size, System.Drawing">
     <value>80, 24</value>
@@ -2539,7 +2539,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>18, 139</value>
+    <value>18, 140</value>
   </data>
   <data name="label3.Size" type="System.Drawing.Size, System.Drawing">
     <value>70, 17</value>
@@ -2569,7 +2569,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>18, 166</value>
+    <value>18, 167</value>
   </data>
   <data name="label4.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 17</value>
@@ -2599,7 +2599,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>18, 193</value>
+    <value>18, 194</value>
   </data>
   <data name="label5.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 17</value>
@@ -2629,7 +2629,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>18, 218</value>
+    <value>18, 221</value>
   </data>
   <data name="label6.Size" type="System.Drawing.Size, System.Drawing">
     <value>35, 17</value>
@@ -2689,7 +2689,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>18, 247</value>
+    <value>18, 248</value>
   </data>
   <data name="label7.Size" type="System.Drawing.Size, System.Drawing">
     <value>55, 17</value>
@@ -3130,7 +3130,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label19.Location" type="System.Drawing.Point, System.Drawing">
-    <value>181, 217</value>
+    <value>181, 221</value>
   </data>
   <data name="label19.Size" type="System.Drawing.Size, System.Drawing">
     <value>67, 17</value>
@@ -3220,7 +3220,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label18.Location" type="System.Drawing.Point, System.Drawing">
-    <value>182, 246</value>
+    <value>182, 248</value>
   </data>
   <data name="label18.Size" type="System.Drawing.Size, System.Drawing">
     <value>118, 17</value>
@@ -3280,7 +3280,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label17.Location" type="System.Drawing.Point, System.Drawing">
-    <value>182, 191</value>
+    <value>182, 194</value>
   </data>
   <data name="label17.Size" type="System.Drawing.Size, System.Drawing">
     <value>65, 17</value>
@@ -3310,7 +3310,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label16.Location" type="System.Drawing.Point, System.Drawing">
-    <value>182, 164</value>
+    <value>182, 167</value>
   </data>
   <data name="label16.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 17</value>
@@ -3340,7 +3340,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label15.Location" type="System.Drawing.Point, System.Drawing">
-    <value>182, 138</value>
+    <value>182, 140</value>
   </data>
   <data name="label15.Size" type="System.Drawing.Size, System.Drawing">
     <value>95, 17</value>
@@ -3370,7 +3370,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label14.Location" type="System.Drawing.Point, System.Drawing">
-    <value>182, 110</value>
+    <value>182, 113</value>
   </data>
   <data name="label14.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 17</value>
@@ -3901,7 +3901,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label26.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 247</value>
+    <value>11, 248</value>
   </data>
   <data name="label26.Size" type="System.Drawing.Size, System.Drawing">
     <value>55, 17</value>
@@ -3931,7 +3931,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label27.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 220</value>
+    <value>11, 221</value>
   </data>
   <data name="label27.Size" type="System.Drawing.Size, System.Drawing">
     <value>35, 17</value>
@@ -3961,7 +3961,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label28.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 193</value>
+    <value>11, 194</value>
   </data>
   <data name="label28.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 17</value>
@@ -3991,7 +3991,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label29.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 166</value>
+    <value>11, 167</value>
   </data>
   <data name="label29.Size" type="System.Drawing.Size, System.Drawing">
     <value>47, 17</value>
@@ -4051,7 +4051,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label30.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 139</value>
+    <value>11, 140</value>
   </data>
   <data name="label30.Size" type="System.Drawing.Size, System.Drawing">
     <value>70, 17</value>
@@ -4507,7 +4507,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label33.Location" type="System.Drawing.Point, System.Drawing">
-    <value>173, 218</value>
+    <value>173, 221</value>
   </data>
   <data name="label33.Size" type="System.Drawing.Size, System.Drawing">
     <value>67, 17</value>
@@ -4537,7 +4537,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label34.Location" type="System.Drawing.Point, System.Drawing">
-    <value>174, 247</value>
+    <value>174, 248</value>
   </data>
   <data name="label34.Size" type="System.Drawing.Size, System.Drawing">
     <value>118, 17</value>
@@ -4597,7 +4597,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label23.Location" type="System.Drawing.Point, System.Drawing">
-    <value>174, 111</value>
+    <value>174, 113</value>
   </data>
   <data name="label23.Size" type="System.Drawing.Size, System.Drawing">
     <value>66, 17</value>
@@ -4627,7 +4627,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label22.Location" type="System.Drawing.Point, System.Drawing">
-    <value>174, 139</value>
+    <value>174, 140</value>
   </data>
   <data name="label22.Size" type="System.Drawing.Size, System.Drawing">
     <value>95, 17</value>
@@ -4657,7 +4657,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label21.Location" type="System.Drawing.Point, System.Drawing">
-    <value>174, 165</value>
+    <value>174, 167</value>
   </data>
   <data name="label21.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 17</value>
@@ -4687,7 +4687,7 @@ this ensures you wont lose radio link</value>
     <value>NoControl</value>
   </data>
   <data name="label20.Location" type="System.Drawing.Point, System.Drawing">
-    <value>174, 192</value>
+    <value>174, 194</value>
   </data>
   <data name="label20.Size" type="System.Drawing.Size, System.Drawing">
     <value>65, 17</value>
