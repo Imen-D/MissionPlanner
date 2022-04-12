@@ -909,6 +909,7 @@ namespace MissionPlanner.GCSViews
         private void altitudeAngelSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
 #if !LIB
+            MissionPlanner.Utilities.AltitudeAngel.AltitudeAngel.Configure();
             new Utilities.AltitudeAngel.AASettings().Show(this);
 #endif
         }
@@ -1318,9 +1319,8 @@ namespace MissionPlanner.GCSViews
                 ((Control) sender).Enabled = false;
                 if (MainV2.comPort.MAV.cs.firmware == Firmwares.ArduPlane ||
                     MainV2.comPort.MAV.cs.firmware == Firmwares.Ateryx ||
-                    MainV2.comPort.MAV.cs.firmware == Firmwares.ArduRover)
-                    MainV2.comPort.setMode("Loiter");
-                if (MainV2.comPort.MAV.cs.firmware == Firmwares.ArduCopter2)
+                    MainV2.comPort.MAV.cs.firmware == Firmwares.ArduRover ||
+                    MainV2.comPort.MAV.cs.firmware == Firmwares.ArduCopter2)
                     MainV2.comPort.setMode("Loiter");
             }
             catch
@@ -2730,7 +2730,7 @@ namespace MissionPlanner.GCSViews
                 "rtspsrc location=rtsp://{0}:8554/fpv_stream latency=1 udp-reconnect=1 timeout=0 do-retransmission=false ! application/x-rtp ! rtph264depay ! h264parse ! queue ! avdec_h264 ! queue max-size-buffers=1 leaky=2 ! videoconvert ! video/x-raw,format=BGRx ! appsink name=outsink",
                 ipaddr);
 
-            GStreamer.LookForGstreamer();
+            GStreamer.gstlaunch = GStreamer.LookForGstreamer();
 
             if (!GStreamer.gstlaunchexists)
             {
@@ -4261,7 +4261,7 @@ namespace MissionPlanner.GCSViews
 
                 GStreamer.StopAll();
 
-                GStreamer.LookForGstreamer();
+                GStreamer.gstlaunch = GStreamer.LookForGstreamer();
 
                 if (!GStreamer.gstlaunchexists)
                 {
