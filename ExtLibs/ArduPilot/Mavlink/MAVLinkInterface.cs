@@ -1349,6 +1349,29 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
             }
         }
 
+        public bool Write(byte[] packet)
+        {
+            lock (objlock)
+            {
+                if (BaseStream.IsOpen)
+                {
+                    BaseStream.Write(packet, 0, packet.Length);
+                    _bytesSentSubj.OnNext(packet.Length);
+                }
+
+                try
+                {
+                    SaveToTlog(new Span<byte>(packet, 0, packet.Length));
+
+                    _OnPacketSent?.Invoke(this, new MAVLinkMessage(packet));
+                }
+                catch
+                {
+                }
+            }
+            return true;
+        }
+
         public bool Write(string line)
         {
             lock (objlock)
@@ -2558,7 +2581,14 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
 
                         log.InfoFormat("doCommand cmd resp {0} - {1}", (MAV_CMD) ack.command, (MAV_RESULT) ack.result);
 
-                        if (ack.result == (byte) MAV_RESULT.ACCEPTED)
+
+                        if (ack.result == (byte)MAV_RESULT.IN_PROGRESS)
+                        {
+                            start = DateTime.Now;
+                            retrys = 0;
+                            continue;
+                        } 
+                        else if (ack.result == (byte) MAV_RESULT.ACCEPTED)
                         {
                             giveComport = false;
                             return true;
@@ -2643,7 +2673,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                     if (retrys > 0)
                     {
                         log.Info("doCommandIntAsync Retry " + retrys);
-                        generatePacket((byte) MAVLINK_MSG_ID.COMMAND_LONG, req, sysid, compid);
+                        generatePacket((byte) MAVLINK_MSG_ID.COMMAND_INT, req, sysid, compid);
                         start = DateTime.Now;
                         retrys--;
                         continue;
@@ -5189,7 +5219,13 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                         len = MirrorStream.Read(buf, 0, len);
 
                         if (MirrorStreamWrite)
-                            BaseStream.Write(buf, 0, len);
+                            lock (objlock)
+                            {
+                                BaseStream.Write(buf, 0, len);
+
+                                if (rawlogfile != null && rawlogfile.CanWrite)
+                                    rawlogfile.Write(buf, 0, len);
+                            }
                     }
                 }
             }
@@ -5550,6 +5586,9 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
 
             req.target_component = compid;
             req.target_system = sysid;
+
+            // use both methods
+            doCommand(MAV_CMD.REQUEST_AUTOPILOT_CAPABILITIES, 0, 0, 0, 0, 0, 0, 0, false);
 
             if (responcerequired)
                 giveComport = true;

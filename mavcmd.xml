@@ -102,6 +102,24 @@
       <Y>Long</Y>
       <Z>Alt</Z>
     </PAYLOAD_PLACE>
+    <DO_LAND_START>
+      <P1></P1>
+      <P2></P2>
+      <P3></P3>
+      <P4></P4>
+      <X></X>
+      <Y></Y>
+      <Z></Z>
+    </DO_LAND_START>
+		<DO_AUX_FUNCTION>
+			<P1>AuxFunction</P1>
+			<P2>SwitchPosition</P2>
+			<P3></P3>
+			<P4></P4>
+			<X></X>
+			<Y></Y>
+			<Z></Z>
+		</DO_AUX_FUNCTION>
     <DO_GUIDED_LIMITS>
       <P1>timeout S</P1>
       <P2>min alt</P2>
@@ -291,6 +309,33 @@
       <Y></Y>
       <Z></Z>
     </SCRIPT_TIME>
+    <DO_AUTOTUNE_ENABLE>
+      <P1>enable</P1>
+      <P2></P2>
+      <P3></P3>
+      <P4></P4>
+      <X></X>
+      <Y></Y>
+      <Z></Z>
+    </DO_AUTOTUNE_ENABLE>
+    <DO_ENGINE_CONTROL>
+      <P1>Start Engine</P1>
+      <P2>Cold Start</P2>
+      <P3>Height Delay</P3>
+      <P4></P4>
+      <X></X>
+      <Y></Y>
+      <Z></Z>
+    </DO_ENGINE_CONTROL>
+    <DO_SET_RESUME_REPEAT_DIST>
+      <P1>Distance(m)</P1>
+      <P2></P2>
+      <P3></P3>
+      <P4></P4>
+      <X></X>
+      <Y></Y>
+      <Z></Z>
+    </DO_SET_RESUME_REPEAT_DIST>   
 
   </AC2>
   <!-- -->
@@ -619,6 +664,33 @@
       <Y></Y>
       <Z></Z>
     </DO_SPRAYER>
+    <DO_AUTOTUNE_ENABLE>
+      <P1>enable</P1>
+      <P2></P2>
+      <P3></P3>
+      <P4></P4>
+      <X></X>
+      <Y></Y>
+      <Z></Z>
+    </DO_AUTOTUNE_ENABLE>
+    <DO_ENGINE_CONTROL>
+      <P1>Start Engine</P1>
+      <P2>Cold Start</P2>
+      <P3>Height Delay</P3>
+      <P4></P4>
+      <X></X>
+      <Y></Y>
+      <Z></Z>
+    </DO_ENGINE_CONTROL>
+    <DO_SET_RESUME_REPEAT_DIST>
+      <P1>Distance(m)</P1>
+      <P2></P2>
+      <P3></P3>
+      <P4></P4>
+      <X></X>
+      <Y></Y>
+      <Z></Z>
+    </DO_SET_RESUME_REPEAT_DIST>
   </APM>
   <!-- -->
   <APRover>
@@ -712,6 +784,15 @@
       <Y>Long</Y>
       <Z>Alt</Z>
     </DO_SET_ROI>
+		<DO_AUX_FUNCTION>
+			<P1>AuxFunction</P1>
+			<P2>SwitchPosition</P2>
+			<P3></P3>
+			<P4></P4>
+			<X></X>
+			<Y></Y>
+			<Z></Z>
+		</DO_AUX_FUNCTION>
     <DO_SET_REVERSE>
       <P1>Direction (0=F,1=R)</P1>
       <P2></P2>
@@ -838,5 +919,14 @@
       <Y></Y>
       <Z></Z>
     </DO_SPRAYER>
+    <DO_SET_RESUME_REPEAT_DIST>
+      <P1>Distance(m)</P1>
+      <P2></P2>
+      <P3></P3>
+      <P4></P4>
+      <X></X>
+      <Y></Y>
+      <Z></Z>
+    </DO_SET_RESUME_REPEAT_DIST>
   </APRover>
 </CMD>

@@ -650,6 +650,12 @@
     <None Include="plugins\example17-menuremove.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="plugins\example18-externalapi.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="plugins\example19-multiforward.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Compile Include="Utilities\AirMarket.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -4625,6 +4631,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="MissionPlanner.GCSViews.ConfigurationView.DeviceInfo.datasource" />
+    <None Include="README.md" />
     <None Include="Resources\Gaugebg.png" />
     <None Include="appxmanifest.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
