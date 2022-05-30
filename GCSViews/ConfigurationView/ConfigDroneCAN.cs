@@ -59,23 +59,40 @@ namespace MissionPlanner.GCSViews.ConfigurationView
 
         private void but_slcanmavlink_Click(object sender, EventArgs e)
         {
-            byte bus = 1;
+            mavlinkCANRun = false;
+            StartMavlinkCAN(1);
+        }
+
+        private void StartMavlinkCAN(byte bus = 1) 
+        {
+            BusInUse = bus;
+            but_slcanmode1.Enabled = false;
+            but_mavlinkcanmode2.Enabled = true;
+            but_mavlinkcanmode2_2.Enabled = true;
+            but_filter.Enabled = true;
 
             Task.Run(() =>
             {
+                // allows old instance to exit
+                Thread.Sleep(1000);
                 mavlinkCANRun = true;
                 // send every second, timeout is in 5 seconds
                 while (mavlinkCANRun)
                 {
-                    // setup forwarding on can port 1
-                    var ans = MainV2.comPort.doCommand((byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, MAVLink.MAV_CMD.CAN_FORWARD, bus, 0, 0, 0, 0, 0, 0);
-
-                    if (ans == false) // MAVLink.MAV_RESULT.UNSUPPORTED)
+                    try
                     {
-                        return;
-                    }
+                        // setup forwarding on can port 1
+                        var ans = MainV2.comPort.doCommand((byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, MAVLink.MAV_CMD.CAN_FORWARD, bus, 0, 0, 0, 0, 0, 0, false);
 
-                    Thread.Sleep(1000);
+                        if (ans == false) // MAVLink.MAV_RESULT.UNSUPPORTED)
+                        {
+                            //return;
+                        }
+                    }
+                    catch (Exception ex) {  }
+
+                    if (mavlinkCANRun)
+                        Thread.Sleep(1000);
                 }
             });
 
@@ -84,20 +101,24 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             var can = new DroneCAN.DroneCAN();
             can.FrameReceived += (frame, payload) =>
             {
+                //https://github.com/dronecan/pydronecan/blob/master/dronecan/driver/mavcan.py#L114
+                //if frame.extended:
+                //  message_id |= 1 << 31
 
                 if (payload.packet_data.Length > 8)
-                    MainV2.comPort.sendPacket(new MAVLink.mavlink_canfd_frame_t(BitConverter.ToUInt32(frame.packet_data, 0),
+                    MainV2.comPort.sendPacket(new MAVLink.mavlink_canfd_frame_t(BitConverter.ToUInt32(frame.packet_data, 0) + (frame.Extended ? 0x80000000: 0),
                             (byte)MainV2.comPort.sysidcurrent,
-                            (byte)MainV2.comPort.compidcurrent, (byte)(bus), (byte)payload.packet_data.Length,
+                            (byte)MainV2.comPort.compidcurrent, (byte)(bus-1), (byte)DroneCAN.DroneCAN.dataLengthToDlc(payload.packet_data.Length),
                             payload.packet_data),
                         (byte)MainV2.comPort.sysidcurrent,
                         (byte)MainV2.comPort.compidcurrent);
                 else
                 {
-                    MainV2.comPort.sendPacket(new MAVLink.mavlink_can_frame_t(BitConverter.ToUInt32(frame.packet_data, 0),
+                    var frame2 = new MAVLink.mavlink_can_frame_t(BitConverter.ToUInt32(frame.packet_data, 0) + (frame.Extended ? 0x80000000 : 0),
                             (byte)MainV2.comPort.sysidcurrent,
-                            (byte)MainV2.comPort.compidcurrent, (byte)(bus), (byte)payload.packet_data.Length,
-                            payload.packet_data),
+                            (byte)MainV2.comPort.compidcurrent, (byte)(bus-1), (byte)DroneCAN.DroneCAN.dataLengthToDlc(payload.packet_data.Length),
+                            payload.packet_data);
+                    MainV2.comPort.sendPacket(frame2,
                         (byte)MainV2.comPort.sysidcurrent,
                         (byte)MainV2.comPort.compidcurrent);
                 }
@@ -127,7 +148,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                     var cf = new CANFrame(BitConverter.GetBytes(pkt.id));
                     var length = pkt.len;
                     var payload = new CANPayload(pkt.data);
-               
+
                     var ans2 = String.Format("{0}{1}{2}{3}\r", canfd ? 'B' : 'T', cf.ToHex(), length.ToString("X")
                     , payload.ToHex(DroneCAN.DroneCAN.dlcToDataLength(length)));
 
@@ -148,7 +169,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                 }
 
                 return true;
-            }, true);
+            }, (byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, true);
 
             SetupSLCanPort(port);
         }
@@ -156,7 +177,9 @@ namespace MissionPlanner.GCSViews.ConfigurationView
         public void startslcan(byte canport)
         {
             but_slcanmode1.Enabled = false;
-            but_slcanmode2.Enabled = false;
+            but_mavlinkcanmode2.Enabled = false;
+            but_mavlinkcanmode2_2.Enabled = false;
+            but_filter.Enabled = false;
 
             try
             {
@@ -413,6 +436,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
         private Timer timer;
         private TcpListener listener;
         private bool mavlinkCANRun;
+        private byte BusInUse;
 
         private void myDataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -762,6 +786,89 @@ namespace MissionPlanner.GCSViews.ConfigurationView
         private void menu_updatebeta_Click(object sender, EventArgs e)
         {
             FirmwareUpdate(byte.Parse(myDataGridView1.CurrentRow.Cells[iDDataGridViewTextBoxColumn.Index].Value.ToString()), true);
+        }
+
+        private void but_slcanmode2_2_Click(object sender, EventArgs e)
+        {
+            mavlinkCANRun = false;
+            StartMavlinkCAN(2);
+        }
+
+        private void but_filter_Click(object sender, EventArgs e)
+        {
+            List<ushort> defaultfilter = new List<ushort>
+            {
+                (UInt16)0,
+                DroneCAN.DroneCAN.uavcan_protocol_NodeStatus.UAVCAN_PROTOCOL_NODESTATUS_DT_ID,
+                DroneCAN.DroneCAN.uavcan_protocol_GetNodeInfo_req.UAVCAN_PROTOCOL_GETNODEINFO_REQ_DT_ID,
+                DroneCAN.DroneCAN.uavcan_protocol_RestartNode_req.UAVCAN_PROTOCOL_RESTARTNODE_REQ_DT_ID,
+                DroneCAN.DroneCAN.uavcan_protocol_param_GetSet_req.UAVCAN_PROTOCOL_PARAM_GETSET_REQ_DT_ID,
+                DroneCAN.DroneCAN.uavcan_protocol_param_ExecuteOpcode_req.UAVCAN_PROTOCOL_PARAM_EXECUTEOPCODE_REQ_DT_ID,
+                DroneCAN.DroneCAN.uavcan_protocol_file_BeginFirmwareUpdate_req.UAVCAN_PROTOCOL_FILE_BEGINFIRMWAREUPDATE_REQ_DT_ID,
+                DroneCAN.DroneCAN.uavcan_protocol_file_Read_req.UAVCAN_PROTOCOL_FILE_READ_REQ_DT_ID,
+                DroneCAN.DroneCAN.uavcan_protocol_file_GetInfo_req.UAVCAN_PROTOCOL_FILE_GETINFO_REQ_DT_ID,
+                DroneCAN.DroneCAN.uavcan_protocol_dynamic_node_id_Allocation.UAVCAN_PROTOCOL_DYNAMIC_NODE_ID_ALLOCATION_DT_ID,
+                DroneCAN.DroneCAN.uavcan_protocol_debug_LogMessage.UAVCAN_PROTOCOL_DEBUG_LOGMESSAGE_DT_ID,
+            };
+
+            var list = DroneCAN.DroneCAN.MSG_INFO.Select(a => (a.msgid, a.type.Name)).OrderBy(a => a.Name.ToLower());
+
+            var paneltop = new Panel() { Width = (int)(320 * 2.3), Height = 600 };
+
+            var panel = new FlowLayoutPanel() { Text = "DroneCAN Messages", AutoScroll = true, Dock = DockStyle.Fill };
+
+            paneltop.Controls.Add(panel);
+
+            var cball = new CheckBox() { Text = "ALL", Width = 320 };
+            cball.CheckedChanged += (s, e2) =>
+            {
+                // update custom
+                MAVLink.mavlink_can_filter_modify_t filter2 = new MAVLink.mavlink_can_filter_modify_t(defaultfilter.ToArray().MakeSize(16), (byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, BusInUse, (byte)MAVLink.CAN_FILTER_OP.CAN_FILTER_REPLACE, 0);
+
+                if (mavlinkCANRun)
+                {
+                    try
+                    {
+                        MainV2.comPort.sendPacket(filter2, (byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent);
+                    }
+                    catch (Exception ex) { Console.WriteLine(ex.ToString()); }
+                }
+            };
+            panel.Controls.Add(cball);
+            
+            panel.Controls.AddRange(list.Select(a =>
+            {
+                var cb = new CheckBox() { Name = a.Name, Text = a.Name, Checked = defaultfilter.Contains(a.msgid), Width = 320 };
+                cb.CheckedChanged += (s, e2) =>
+                {
+                    if (cb.Checked)
+                    {
+                        if (!defaultfilter.Contains(a.msgid))
+                            defaultfilter.Add(a.msgid);
+                    }
+                    else
+                    {
+                        defaultfilter.Remove(a.msgid);
+                    }
+
+                    // update custom
+                    MAVLink.mavlink_can_filter_modify_t filter2 = new MAVLink.mavlink_can_filter_modify_t(defaultfilter.ToArray().MakeSize(16), (byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent, BusInUse, (byte)MAVLink.CAN_FILTER_OP.CAN_FILTER_REPLACE, (byte)defaultfilter.Count());
+
+                    if (mavlinkCANRun)
+                    {
+                        try
+                        {
+                            MainV2.comPort.sendPacket(filter2, (byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent);
+                        }
+                        catch (Exception ex) { Console.WriteLine(ex.ToString()); }
+                    }
+                };
+                return cb;
+            }).ToArray());
+
+            var frm = paneltop.ShowUserControl();
+            
+            frm.Invalidate();
         }
     }
 }

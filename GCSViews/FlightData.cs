@@ -906,14 +906,6 @@ namespace MissionPlanner.GCSViews
             POI.POIAdd(MouseDownStart);
         }
 
-        private void altitudeAngelSettingsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-#if !LIB
-            MissionPlanner.Utilities.AltitudeAngel.AltitudeAngel.Configure();
-            new Utilities.AltitudeAngel.AASettings().Show(this);
-#endif
-        }
-
         private void BUT_abort_script_Click(object sender, EventArgs e)
         {
             scriptthread.Abort();
@@ -958,7 +950,7 @@ namespace MissionPlanner.GCSViews
                     sb.AppendLine(Encoding.ASCII.GetString(((MAVLink.mavlink_statustext_t) message.data).text)
                         .TrimEnd('\0'));
                     return true;
-                });
+                }, (byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent);
                 bool ans = MainV2.comPort.doARM(!isitarmed);
                 MainV2.comPort.UnSubscribeToPacketType(sub);
                 if (ans == false)

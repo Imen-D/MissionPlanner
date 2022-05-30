@@ -5408,7 +5408,7 @@ namespace MissionPlanner.GCSViews
             //It is not defined in MAV_CMD
 
             Dictionary<string, ushort> configCommands = new Dictionary<string, ushort>();
-            configCommands = JsonConvert.DeserializeObject<Dictionary<string, ushort>>(Settings.Instance["PlannerExtraCommandIDs"]);
+            configCommands = JsonConvert.DeserializeObject<Dictionary<string, ushort>>(Settings.Instance["PlannerExtraCommandIDs"] ?? "{}");
             //It will return NULL to fall back to UNKNOWN if ID not defined
             return configCommands.FirstOrDefault(x => x.Value == cmdID).Key;
 
@@ -5910,7 +5910,7 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
                     result = ans;
                     Console.WriteLine("MISSION_ACK " + ans + " " + data.ToJSON(Formatting.None));
                     return true;
-                });
+                }, (byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent);
 
             var sub2 = MainV2.comPort.SubscribeToPacketType(MAVLink.MAVLINK_MSG_ID.MISSION_REQUEST,
                 message =>
@@ -5927,7 +5927,7 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
                     reqno = data.seq;
                     Console.WriteLine("MISSION_REQUEST " + reqno + " " + data.ToJSON(Formatting.None));
                     return true;
-                });
+                }, (byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent);
 
             ((ProgressReporterDialogue) sender).UpdateProgressAndStatus(0, "Set total wps ");
             MainV2.comPort.setWPTotal(totalwpcountforupload);
