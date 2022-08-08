@@ -463,6 +463,9 @@ namespace MissionPlanner
 
                         await Task.Delay(2000);
 
+                        if (MAVlist[tuple.Item1, tuple.Item2].Camera == null)
+                            return;
+
                         await MAVlist[tuple.Item1, tuple.Item2]
                             .Camera.StartID(MAVlist[tuple.Item1, tuple.Item2])
                             .ConfigureAwait(false);
@@ -735,7 +738,8 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                     {
                         mavlink_heartbeat_t hb = buffer.ToStructure<mavlink_heartbeat_t>();
 
-                        if (hb.type != (byte) MAV_TYPE.GCS)
+                        // no GCS's and no broadcast compid's (ping adsb)
+                        if (hb.type != (byte) MAV_TYPE.GCS && buffer.compid != 0)
                         {
                             hbhistory.Add(buffer);
                         }
@@ -1752,7 +1756,8 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                                     $"Getting Param MAVFTP {sysid}-{compid} : {s}");
                         };
                         return ftp.GetFile(
-                            "@PARAM/param.pck", cancel, true, 110);
+                            // always try to get defualts, AP will send orginal format if not avalable
+                            "@PARAM/param.pck?withdefaults=1", cancel, true, 110);
                     });
                     while (!paramfileTask.IsCompleted)
                     {
@@ -3335,9 +3340,12 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                         loc.lng = ((wp.y / 1.0e7));
 
                         if (loc.id == (ushort) MAV_CMD.DO_DIGICAM_CONTROL ||
-                            loc.id == (ushort) MAV_CMD.DO_DIGICAM_CONFIGURE)
+                            loc.id == (ushort) MAV_CMD.DO_DIGICAM_CONFIGURE ||
+                            loc.id == (ushort) MAV_CMD.ATTITUDE_TIME ||
+                            loc.id == (ushort) MAV_CMD.DO_GIMBAL_MANAGER_PITCHYAW)
                         {
                             loc.lat = wp.x;
+                            loc.lng = wp.y;
                         }
 
                         log.InfoFormat("getWPint {0} {1} {2} {3} {4} opt {5}", loc.id, loc.p1, loc.alt, loc.lat,
@@ -3799,7 +3807,10 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                     frame = (byte) frame
                 };
 
-                if (loc.id == (ushort) MAV_CMD.DO_DIGICAM_CONTROL || loc.id == (ushort) MAV_CMD.DO_DIGICAM_CONFIGURE)
+                if (loc.id == (ushort) MAV_CMD.DO_DIGICAM_CONTROL || 
+                    loc.id == (ushort) MAV_CMD.DO_DIGICAM_CONFIGURE || 
+                    loc.id == (ushort) MAV_CMD.ATTITUDE_TIME ||
+                    loc.id == (ushort) MAV_CMD.DO_GIMBAL_MANAGER_PITCHYAW)
                 {
                     req.y = (int) (loc.lng);
                     req.x = (int) (loc.lat);

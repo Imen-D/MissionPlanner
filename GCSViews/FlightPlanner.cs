@@ -50,6 +50,7 @@ using Placemark = SharpKml.Dom.Placemark;
 using Point = System.Drawing.Point;
 using Resources = MissionPlanner.Properties.Resources;
 using Newtonsoft.Json;
+using MissionPlanner.ArduPilot.Mavlink;
 
 namespace MissionPlanner.GCSViews
 {
@@ -94,7 +95,7 @@ namespace MissionPlanner.GCSViews
         public GMapMarker center = new GMarkerGoogle(new PointLatLng(0.0, 0.0), GMarkerGoogleType.none);
         private Dictionary<string, string[]> cmdParamNames = new Dictionary<string, string[]>();
         private GMapMarkerRect CurentRectMarker;
-        private altmode currentaltmode = altmode.Relative;
+        private altmode currentaltmode = (altmode) Settings.Instance.GetInt32("FPaltmode", (int)altmode.Relative);
         private GMapMarker CurrentGMapMarker;
         public GMapMarker currentMarker;
         private GMapMarkerPOI CurrentPOIMarker;
@@ -310,6 +311,8 @@ namespace MissionPlanner.GCSViews
             else
                 CHK_splinedefault.Visible = false;
 
+            chk_usemavftp.Checked = Settings.Instance.GetBoolean("UseMissionMAVFTP", false);
+
             updateHome();
 
             setWPParams();
@@ -389,9 +392,13 @@ namespace MissionPlanner.GCSViews
                 return true;
             }
 
-            if (keyData == (Keys.Control | Keys.W | Keys.Shift))
+            if (keyData == (Keys.Control | Keys.F | Keys.Shift))
             {
                 but_writewpfast_Click(this, EventArgs.Empty);
+            }
+            if (keyData == (Keys.Control | Keys.W | Keys.Shift))
+            {
+                BUT_write_Click(this, EventArgs.Empty);
             }
             if (keyData == (Keys.Control | Keys.R | Keys.Shift))
             {
@@ -2144,6 +2151,7 @@ namespace MissionPlanner.GCSViews
             else
             {
                 currentaltmode = (altmode) CMB_altmode.SelectedValue;
+                Settings.Instance["FPaltmode"] = ((int) currentaltmode).ToString();
             }
         }
 
@@ -3926,6 +3934,35 @@ namespace MissionPlanner.GCSViews
             {
                 return (MAVLink.MAV_MISSION_TYPE) cmb_missiontype.SelectedValue;
             });
+
+            if (chk_usemavftp.Checked)
+            {
+                try
+                {
+                    var paramfileTask = Task.Run<MemoryStream>(() =>
+                    {
+                        var ftp = new MAVFtp(MainV2.comPort, MainV2.comPort.MAV.sysid, MainV2.comPort.MAV.compid);
+                        ftp.Progress += (status, percent) => { sender.UpdateProgressAndStatus((int)(percent), status); };
+                        if (type == MAVLink.MAV_MISSION_TYPE.MISSION)
+                            return ftp.GetFile(
+                                "@MISSION/mission.dat", null, true, 110);
+                        if (type == MAVLink.MAV_MISSION_TYPE.FENCE)
+                            return ftp.GetFile(
+                                "@MISSION/fence.dat", null, true, 110);
+                        if (type == MAVLink.MAV_MISSION_TYPE.RALLY)
+                            return ftp.GetFile(
+                                "@MISSION/rally.dat", null, true, 110);
+                        return null;
+                    });
+                    var values = missionpck.unpack(paramfileTask.GetAwaiter().GetResult().ToArray());
+                    WPtoScreen(values.wps.Select(a => (Locationwp)a).ToList());
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    log.Error(ex);
+                }
+            }
 
             List<Locationwp> cmds = mav_mission.download(MainV2.comPort,
                 MainV2.comPort.MAV.sysid,
@@ -5813,6 +5850,27 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
                     }).ToList();
                 }
 
+                if (chk_usemavftp.Checked)
+                {
+                    try
+                    {
+                        var values = missionpck.pack(commandlist.Select(a => (MAVLink.mavlink_mission_item_int_t)a).ToList(), type, 0);
+                        var ftp = new MAVFtp(MainV2.comPort, MainV2.comPort.MAV.sysid, MainV2.comPort.MAV.compid);
+                        ftp.Progress += (status, percent) => { sender.UpdateProgressAndStatus((int)(percent), status); };
+                        if (type == MAVLink.MAV_MISSION_TYPE.MISSION)
+                            ftp.UploadFile("@MISSION/mission.dat", new MemoryStream(values), null);
+                        if (type == MAVLink.MAV_MISSION_TYPE.FENCE)
+                            ftp.UploadFile("@MISSION/fence.dat", new MemoryStream(values), null);
+                        if (type == MAVLink.MAV_MISSION_TYPE.RALLY)
+                            ftp.UploadFile("@MISSION/rally.dat", new MemoryStream(values), null);
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Error(ex);
+                    }
+                }
+
                 Task.Run(async () =>
                 {
                     await mav_mission.upload(MainV2.comPort, MainV2.comPort.MAV.sysid, MainV2.comPort.MAV.compid, type,
@@ -6609,7 +6667,10 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
                 //TXT_WPRad.Text = (127 * CurrentState.multiplierdist).ToString();
             }
 
-            writeKML();
+            if (this.ActiveControl != null)
+            {
+                writeKML();
+            }
         }
 
         public void updateCMDParams()
@@ -7863,6 +7924,11 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
             MainMap.Position = MainV2.comPort.MAV.cs.HomeLocation;
             if (MainMap.Zoom < 17)
                 MainMap.Zoom = 17;
+        }
+
+        private void chk_usemavftp_CheckedChanged(object sender, EventArgs e)
+        {
+            Settings.Instance["UseMissionMAVFTP"] = chk_usemavftp.Checked.ToString();
         }
     }
 }

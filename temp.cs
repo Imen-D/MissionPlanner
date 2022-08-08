@@ -504,6 +504,28 @@ namespace MissionPlanner
                 CustomMessageBox.Show(Strings.PleaseConnect, Strings.ERROR);
         }
 
+        private string[] GetFiles(string path, string pattern)
+        {
+            var files = new List<string>();
+            var directories = new string[] { };
+
+            try
+            {
+                files.AddRange(Directory.GetFiles(path, pattern, SearchOption.TopDirectoryOnly));
+                directories = Directory.GetDirectories(path);
+            }
+            catch (UnauthorizedAccessException) { }
+
+            foreach (var directory in directories)
+                try
+                {
+                    files.AddRange(GetFiles(directory, pattern));
+                }
+                catch (UnauthorizedAccessException) { }
+
+            return files.ToArray();
+        }
+
         private void but_maplogs_Click(object sender, EventArgs e)
         {
             var fbd = new FolderBrowserDialog();
@@ -511,9 +533,9 @@ namespace MissionPlanner
 
             if (fbd.ShowDialog() == DialogResult.OK)
             {
-                LogMap.MapLogs(Directory.GetFiles(fbd.SelectedPath, "*.tlog", SearchOption.AllDirectories));
-                LogMap.MapLogs(Directory.GetFiles(fbd.SelectedPath, "*.bin", SearchOption.AllDirectories));
-                LogMap.MapLogs(Directory.GetFiles(fbd.SelectedPath, "*.log", SearchOption.AllDirectories));
+                LogMap.MapLogs(GetFiles(fbd.SelectedPath, "*.tlog"));
+                LogMap.MapLogs(GetFiles(fbd.SelectedPath, "*.bin"));
+                LogMap.MapLogs(GetFiles(fbd.SelectedPath, "*.log"));
             }
         }
 
@@ -951,9 +973,9 @@ namespace MissionPlanner
 
         private void but_dem_Click(object sender, EventArgs e)
         {
-            UserControl ctl = new UserControl() { Width = 1100, AutoSize = true };
+            UserControl ctl = new UserControl() { Width = 1100, Height = 600, AutoSize = true };
 
-            FlowLayoutPanel flp = new FlowLayoutPanel() { Dock = DockStyle.Fill };
+            FlowLayoutPanel flp = new FlowLayoutPanel() { Dock = DockStyle.Fill, AutoScroll = true };
             var lbl2 = new Label() { Text = "Click on line to zoom to it", AutoSize = true };
             flp.Controls.Add(lbl2);
             string line = "";
@@ -962,8 +984,8 @@ namespace MissionPlanner
             {
                 //log.InfoFormat("Start Point ({0},{1},{2}) --> ({3},{4},{5})", item.i, item.j, item.k, item.x, item.y, item.z);
 
-                line = String.Format("{0} = {1} = {2}*{3} {4}\n", item.FileName, item.Area, item.width, item.height, item.bits,
-                    item.xscale, item.yscale, item.zscale);
+                line = String.Format("{0} = {1} = {2}*{3} {4} {8}\r\n", item.FileName, item.Area, item.width, item.height, item.bits,
+                    item.xscale, item.yscale, item.zscale, item.srcProjection?.Name ?? item.srcProjection?.Transform?.Name);
 
                 var lbl = new Label() { Text = line, AutoSize = true};
                 lbl.Click += (o, args) =>
@@ -978,7 +1000,7 @@ namespace MissionPlanner
             var butt = new MyButton() { Text = "Open DEM Dir", Dock = DockStyle.Top };
             butt.Click += (a, ev) =>
             {
-                System.Diagnostics.Process.Start(@"C:\ProgramData\Mission Planner\srtm\");
+                System.Diagnostics.Process.Start(srtm.datadirectory);
             };
             ctl.Controls.Add(butt);
 
@@ -1419,72 +1441,21 @@ namespace MissionPlanner
 
         private void but_signfw_Click(object sender, EventArgs e)
         {
-            
-            // get and open certificate store for current user
-            System.Security.Cryptography.X509Certificates.X509Store store =
-                new System.Security.Cryptography.X509Certificates.X509Store(
-                    System.Security.Cryptography.X509Certificates.StoreLocation.CurrentUser);
-
-            store.Open(System.Security.Cryptography.X509Certificates.OpenFlags.ReadOnly);
-
-            var certificates = store.Certificates.Find(X509FindType.FindByKeyUsage, X509KeyUsageFlags.DigitalSignature, true);
-
-            var cert = certificates[0];
-            store.Close();
-
-            var publickey = cert.Export(X509ContentType.Cert);
-             //
-            // To idendify the Smart Card CryptoGraphic Providers on your
-            // computer, use the Microsoft Registry Editor (Regedit.exe).
-            // The available Smart Card CryptoGraphic Providers are listed
-            // in HKEY_LOCAL_MACHINE\Software\Microsoft\Cryptography\Defaults\Provider.
-
-            // Create a new CspParameters object that identifies a
-            // Smart Card CryptoGraphic Provider.
-            // The 1st parameter comes from HKEY_LOCAL_MACHINE\Software\Microsoft\Cryptography\Defaults\Provider Types.
-            // The 2nd parameter comes from HKEY_LOCAL_MACHINE\Software\Microsoft\Cryptography\Defaults\Provider.
-            CspParameters csp;
-            try
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "APJ File";
+            ofd.Filter = "*.apj|*.apj";
+            if (ofd.ShowDialog() == DialogResult.OK)
             {
-                // private csp
-                csp = new CspParameters(1, "EnterSafe ePass2003 CSP v2.0");
+                OpenFileDialog ofd2 = new OpenFileDialog();
+                ofd2.Title = "Param File";
+                ofd2.Filter = "*.param|*.param|*.parm|*.parm";
+                if (ofd2.ShowDialog() == DialogResult.OK)
+                {
+                    apj_tool.Process(ofd.FileName, ofd2.FileName);
+
+                    CustomMessageBox.Show("The new APJ has been saved with the source APJ");
+                }
             }
-            catch
-            {
-                // ms csp
-                csp = new CspParameters(1, "Microsoft Base Smart Card Crypto Provider");
-            }
-
-            csp.Flags = CspProviderFlags.UseDefaultKeyContainer;
-
-            // Initialize an RSACryptoServiceProvider object using
-            // the CspParameters object.
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(csp);
-
-            var name = rsa.CspKeyContainerInfo.UniqueKeyContainerName;
-
-            // Create some data to sign.
-            byte[] data = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 };
-
-            Console.WriteLine("Data			: " + BitConverter.ToString(data));
-
-            var enc = rsa.Encrypt(data, RSAEncryptionPadding.Pkcs1);
-
-            Console.WriteLine("Data	encrypted: " + BitConverter.ToString(enc));
-
-            var dec = rsa.Decrypt(enc, RSAEncryptionPadding.Pkcs1);
-
-            Console.WriteLine("Data	decrypted: " + BitConverter.ToString(dec));
-
-            // Sign the data using the Smart Card CryptoGraphic Provider.
-            byte[] sig = rsa.SignData(data, "SHA256");
-            
-            Console.WriteLine("Signature	: " + BitConverter.ToString(sig));
-
-            // Verify the data using the Smart Card CryptoGraphic Provider.
-            bool verified = rsa.VerifyData(data, "SHA256", sig);
-
-            Console.WriteLine("Verified		: " + verified);
         }
     }
 }

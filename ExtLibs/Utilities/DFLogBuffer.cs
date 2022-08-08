@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -147,10 +148,13 @@ namespace MissionPlanner.Utilities
                 int b = 0;
                 foreach (var item in this)
                 {
-					var idx = item.IndexOf(',');
-					
-					if (idx <= 0)
-						continue;
+                    var idx = item.IndexOf(',');
+
+                    if (idx <= 0)
+                    {
+                        b++;
+                        continue;
+                    }
 					
                     var msgtype = item.Substring(0, idx);
 
@@ -225,23 +229,24 @@ namespace MissionPlanner.Utilities
                 }
             }
 
-            foreach (var item in GetEnumeratorType("UNIT"))
-            {
-                try
+            if (Unit.Count > 0)
+                foreach (var item in GetEnumeratorType("UNIT"))
                 {
-                    Unit[(char)int.Parse(item["Id"])] = item["Label"].Trim();
+                    try
+                    {
+                        Unit[(char)int.Parse(item["Id"])] = item["Label"].Trim();
+                    }
+                    catch { }
                 }
-                catch { }
-            }
-
-            foreach (var item in GetEnumeratorType("MULT"))
-            {
-                try
+            if (Mult.Count > 0)
+                foreach (var item in GetEnumeratorType("MULT"))
                 {
-                    Mult[(char)int.Parse(item["Id"])] = item["Mult"].Trim();
+                    try
+                    {
+                        Mult[(char)int.Parse(item["Id"])] = item["Mult"].Trim();
+                    }
+                    catch { }
                 }
-                catch { }
-            }
 
             BuildUnitMultiList();
 
