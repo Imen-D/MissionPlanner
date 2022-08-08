@@ -37,7 +37,7 @@
     <AotAssemblies>false</AotAssemblies>
     <EnableLLVM>false</EnableLLVM>
     <BundleAssemblies>false</BundleAssemblies>
-    <AndroidSupportedAbis>x86;arm64-v8a</AndroidSupportedAbis>
+    <AndroidSupportedAbis>armeabi-v7a;x86;arm64-v8a</AndroidSupportedAbis>
     <AndroidStoreUncompressedFileExtensions>
     </AndroidStoreUncompressedFileExtensions>
     <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
@@ -167,6 +167,7 @@
     <AndroidNativeLibrary Include="lib\armeabi-v7a\libarduplane.so" />
     <AndroidNativeLibrary Include="lib\armeabi-v7a\libardurover.so" />
     <AndroidNativeLibrary Include="lib\armeabi-v7a\libardusub.so" />
+    <AndroidNativeLibrary Include="lib\x86\libarducopter.so" />
     <None Include="Resources\AboutResources.txt" />
     <None Include="Assets\AboutAssets.txt" />
     <None Include="Properties\AndroidManifest.xml" />

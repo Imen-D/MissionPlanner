@@ -261,7 +261,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                         return;
                     }
 
-                    MainV2.comPort.setParam(value, (float)_changes[value]);
+                    MainV2.comPort.setParam(value, (double)_changes[value]);
 
                     try
                     {
@@ -385,8 +385,8 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                 var value = (string)Params[e.ColumnIndex, e.RowIndex].Value;
                 value = value.Replace(',', '.');
 
-                var newvalue = (float) new Expression(value).calculate();
-                if (float.IsNaN(newvalue) || float.IsInfinity(newvalue))
+                var newvalue = (double) new Expression(value).calculate();
+                if (double.IsNaN(newvalue) || double.IsInfinity(newvalue))
                 {
                     throw new Exception();
                 }
@@ -493,6 +493,8 @@ namespace MissionPlanner.GCSViews.ConfigurationView
 
                 rowlist.Clear();
 
+                bool has_defaults = false;
+
                 Parallel.ForEach(list, value =>
                 {
                     if (value == null || value == "")
@@ -506,6 +508,13 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                     row.Cells[Value.Index].Value = MainV2.comPort.MAV.param[value].ToString();
                     var fav_params = Settings.Instance.GetList("fav_params");
                     row.Cells[Fav.Index].Value = fav_params.Contains(value);
+
+                    if (MainV2.comPort.MAV.param[value].default_value.HasValue) {
+                        has_defaults = true;
+                        row.Cells[Default_value.Index].Value = MainV2.comPort.MAV.param[value].default_value_to_string();
+                    } else {
+                        row.Cells[Default_value.Index].Value = "NaN";
+                    }
                     try
                     {
                         var metaDataDescription = ParameterMetaDataRepository.GetParameterMetaData(value,
@@ -532,6 +541,9 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                         log.Error(ex);
                     }
                 });
+
+                Default_value.Visible = has_defaults;
+                chk_none_default.Visible = has_defaults;
             }
             //update values in rowlist
             if (!startup)
@@ -597,7 +609,13 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             {
                 if (paramfiles == null)
                 {
-                    paramfiles = GitHubContent.GetDirContent("ardupilot", "ardupilot", "/Tools/Frame_params/", ".param");
+                    string subdir = "";
+                    if (MainV2.comPort.MAV.param.ContainsKey("Q_ENABLE") &&
+                        MainV2.comPort.MAV.param["Q_ENABLE"].Value >= 1.0)
+                    {
+                        subdir = "QuadPlanes/";
+                    }
+                    paramfiles = GitHubContent.GetDirContent("ardupilot", "ardupilot", "/Tools/Frame_params/" + subdir, ".param");
                 }
 
                 BeginInvoke((Action)delegate
@@ -652,6 +670,15 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                     }
                 }
             }
+
+            if (chk_none_default.Checked)
+            {
+                foreach (DataGridViewRow row in Params.Rows)
+                {
+                    row.Visible = (string)row.Cells[Default_value.Index].Value != (string)row.Cells[Value.Index].Value;
+                }
+            }
+
             Params.Enabled = true;
             Params.ResumeLayout();
 
@@ -715,16 +742,6 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                     CustomMessageBox.Show(Strings.ErrorCommunicating + "\n" + ex, Strings.ERROR);
                 }
             }
-        }
-
-        public struct paramsettings // hk's
-        {
-            public string desc;
-            public float maxvalue;
-            public float minvalue;
-            public string name;
-            public float normalvalue;
-            public float scale;
         }
 
         private readonly System.Timers.Timer _filterTimer = new System.Timers.Timer();
@@ -858,7 +875,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             }
         }
 
-        private void chk_modified_CheckedChanged(object sender, EventArgs e)
+        private void chk_filter_CheckedChanged(object sender, EventArgs e)
         {
             FilterTimerOnElapsed(null, null);
         }

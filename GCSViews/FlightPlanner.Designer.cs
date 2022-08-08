@@ -78,6 +78,7 @@ namespace MissionPlanner.GCSViews
             this.coords1 = new MissionPlanner.Controls.Coords();
             this.lbl_status = new System.Windows.Forms.Label();
             this.panelWaypoints = new System.Windows.Forms.Panel();
+            this.chk_usemavftp = new System.Windows.Forms.CheckBox();
             this.but_mincommands = new MissionPlanner.Controls.MyButton();
             this.CMB_altmode = new System.Windows.Forms.ComboBox();
             this.CHK_splinedefault = new System.Windows.Forms.CheckBox();
@@ -404,6 +405,7 @@ namespace MissionPlanner.GCSViews
             // 
             // panelWaypoints
             // 
+            this.panelWaypoints.Controls.Add(this.chk_usemavftp);
             this.panelWaypoints.Controls.Add(this.but_mincommands);
             this.panelWaypoints.Controls.Add(this.CMB_altmode);
             this.panelWaypoints.Controls.Add(this.CHK_splinedefault);
@@ -422,6 +424,13 @@ namespace MissionPlanner.GCSViews
             this.panelWaypoints.ForeColor = System.Drawing.SystemColors.ControlText;
             this.panelWaypoints.Name = "panelWaypoints";
             // 
+            // chk_usemavftp
+            // 
+            resources.ApplyResources(this.chk_usemavftp, "chk_usemavftp");
+            this.chk_usemavftp.Name = "chk_usemavftp";
+            this.chk_usemavftp.UseVisualStyleBackColor = true;
+            this.chk_usemavftp.CheckedChanged += new System.EventHandler(this.chk_usemavftp_CheckedChanged);
+            // 
             // but_mincommands
             // 
             resources.ApplyResources(this.but_mincommands, "but_mincommands");
@@ -431,8 +440,8 @@ namespace MissionPlanner.GCSViews
             // 
             // CMB_altmode
             // 
-            resources.ApplyResources(this.CMB_altmode, "CMB_altmode");
             this.CMB_altmode.FormattingEnabled = true;
+            resources.ApplyResources(this.CMB_altmode, "CMB_altmode");
             this.CMB_altmode.Name = "CMB_altmode";
             this.CMB_altmode.SelectedIndexChanged += new System.EventHandler(this.CMB_altmode_SelectedIndexChanged);
             // 
@@ -488,7 +497,6 @@ namespace MissionPlanner.GCSViews
             this.AZ,
             this.TagData});
             this.Commands.Name = "Commands";
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
             dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
@@ -1647,6 +1655,11 @@ namespace MissionPlanner.GCSViews
         private ToolStripMenuItem zoomToVehicleToolStripMenuItem;
         private ToolStripMenuItem zoomToMissionToolStripMenuItem;
         private ToolStripMenuItem zoomToHomeToolStripMenuItem;
+        private ToolStripMenuItem convertWPToPolygonToolStripMenuItem;
+        private ToolStripMenuItem fromCurrentWaypointsToolStripMenuItem;
+        private ToolStripMenuItem offsetPolygonToolStripMenuItem;
+        private ToolStripMenuItem offsetPolygonToolStripMenuItem2;
+        public CheckBox chk_usemavftp;
         private DataGridViewComboBoxColumn Command;
         private DataGridViewTextBoxColumn Param1;
         private DataGridViewTextBoxColumn Param2;
@@ -1668,9 +1681,5 @@ namespace MissionPlanner.GCSViews
         private DataGridViewTextBoxColumn Dist;
         private DataGridViewTextBoxColumn AZ;
         private DataGridViewTextBoxColumn TagData;
-        private ToolStripMenuItem convertWPToPolygonToolStripMenuItem;
-        private ToolStripMenuItem fromCurrentWaypointsToolStripMenuItem;
-        private ToolStripMenuItem offsetPolygonToolStripMenuItem;
-        private ToolStripMenuItem offsetPolygonToolStripMenuItem2;
     }
 }

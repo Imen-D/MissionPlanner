@@ -176,6 +176,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
         private void LookForPort(APFirmware.MAV_TYPE mavtype, bool alloptions = false)
         {
             var ports = Win32DeviceMgmt.GetAllCOMPorts();
+            ports.AddRange(Linux.GetAllCOMPorts());
 
             if (ExtraDeviceInfo != null)
             {
@@ -327,11 +328,14 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                     return;
 
                 }
+                /*
+                // allow scanning multiple ports
                 else
                 {
                     CustomMessageBox.Show("Failed to discover board id. Please reconnect via usb and try again.", Strings.ERROR);
                     return;
                 }
+                */
             }
 
             CustomMessageBox.Show("Failed to detect port to upload to", Strings.ERROR);
@@ -394,7 +398,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
         private void Lbl_Custom_firmware_label_Click(object sender, EventArgs e)
         {
             using (var fd = new OpenFileDialog
-                {Filter = "Firmware (*.hex;*.px4;*.vrx;*.apj)|*.hex;*.px4;*.vrx;*.apj|All files (*.*)|*.*"})
+                {Filter = "Firmware (*.hex;*.px4;*.vrx;*.apj)|*.hex;*.px4;*.vrx;*.apj|DFU|*.hex;*.bin;*.dfu|All files (*.*)|*.*"})
             {
                 if (Directory.Exists(custom_fw_dir))
                     fd.InitialDirectory = custom_fw_dir;
@@ -411,7 +415,29 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                     var boardtype = BoardDetect.boards.none;
                     try
                     {
-                        if (fd.FileName.ToLower().EndsWith(".px4") || fd.FileName.ToLower().EndsWith(".apj"))
+                        if (fd.FileName.ToLower().EndsWith(".dfu"))
+                        {
+                            DFU.Progress = fw_Progress1;
+                            DFU.Flash(fd.FileName);
+                            return;
+                        }
+                        else if (fd.FileName.ToLower().EndsWith(".hex"))
+                        {
+                            DFU.Progress = fw_Progress1;
+                            if (CustomMessageBox.Show("Do you want to upload this via DFU?", "", CustomMessageBox.MessageBoxButtons.OKCancel) == CustomMessageBox.DialogResult.OK)
+                            {
+                                DFU.Flash(fd.FileName);
+                                return;
+                            }
+                        }
+                        else if(fd.FileName.ToLower().EndsWith(".bin"))
+                        {
+                            DFU.Progress = fw_Progress1;
+                            if (CustomMessageBox.Show("Flashing image to 0x08000000", "", CustomMessageBox.MessageBoxButtons.OKCancel) == CustomMessageBox.DialogResult.OK)
+                                DFU.Flash(fd.FileName, 0x08000000);
+                            return;
+                        }
+                        else if (fd.FileName.ToLower().EndsWith(".px4") || fd.FileName.ToLower().EndsWith(".apj"))
                         {
                             if (solo.Solo.is_solo_alive &&
                                 CustomMessageBox.Show("Solo", "Is this a Solo?",
@@ -427,6 +453,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                         else
                         {
                             var ports = Win32DeviceMgmt.GetAllCOMPorts();
+                            ports.AddRange(Linux.GetAllCOMPorts());
 
                             if (ExtraDeviceInfo != null)
                             {

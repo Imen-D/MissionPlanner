@@ -1,5 +1,5 @@
 ﻿#if !LIB
-extern alias Drawing;using AltitudeAngelWings;using MissionPlanner.Utilities.AltitudeAngel;
+extern alias Drawing;
 #endif
 
 using GMap.NET.WindowsForms;
@@ -455,6 +455,18 @@ namespace MissionPlanner
             {
                 if (speechEngine != null) speechEngine.speechEnable = value;
             }
+        }
+
+        public static bool speech_armed_only = false;
+        public static bool speechEnabled()
+        {
+            if (!speechEnable) {
+                return false;
+            }
+            if (speech_armed_only) {
+                return MainV2.comPort.MAV.cs.armed;
+            }
+            return true;
         }
 
         /// <summary>
@@ -1784,7 +1796,7 @@ namespace MissionPlanner
                     FlightData.CheckBatteryShow();
 
                     // save the baudrate for this port
-                    Settings.Instance[_connectionControl.CMB_serialport.Text + "_BAUD"] =
+                    Settings.Instance[_connectionControl.CMB_serialport.Text.Replace(" ","_") + "_BAUD"] =
                         _connectionControl.CMB_baudrate.Text;
 
                     this.Text = titlebar + " " + comPort.MAV.VersionString;
@@ -2028,10 +2040,10 @@ namespace MissionPlanner
             try
             {
                 // check for saved baud rate and restore
-                if (Settings.Instance[_connectionControl.CMB_serialport.Text + "_BAUD"] != null)
+                if (Settings.Instance[_connectionControl.CMB_serialport.Text.Replace(" ", "_") + "_BAUD"] != null)
                 {
                     _connectionControl.CMB_baudrate.Text =
-                        Settings.Instance[_connectionControl.CMB_serialport.Text + "_BAUD"];
+                        Settings.Instance[_connectionControl.CMB_serialport.Text.Replace(" ", "_") + "_BAUD"];
                 }
             }
             catch
@@ -2067,9 +2079,6 @@ namespace MissionPlanner
 
             log.Info("close logs");
 
-#if !LIB
-            AltitudeAngel.Dispose();
-#endif
             // close bases connection
             try
             {
@@ -2696,7 +2705,7 @@ namespace MissionPlanner
                     }
 
                     // 30 seconds interval speech options
-                    if (speechEnable && speechEngine != null && (DateTime.Now - speechcustomtime).TotalSeconds > 30 &&
+                    if (speechEnabled() && speechEngine != null && (DateTime.Now - speechcustomtime).TotalSeconds > 30 &&
                         (MainV2.comPort.logreadmode || comPort.BaseStream.IsOpen))
                     {
                         if (MainV2.speechEngine.IsReady)
@@ -2740,7 +2749,7 @@ namespace MissionPlanner
                     }
 
                     // speech for airspeed alerts
-                    if (speechEnable && speechEngine != null && (DateTime.Now - speechlowspeedtime).TotalSeconds > 10 &&
+                    if (speechEnabled() && speechEngine != null && (DateTime.Now - speechlowspeedtime).TotalSeconds > 10 &&
                         (MainV2.comPort.logreadmode || comPort.BaseStream.IsOpen))
                     {
                         if (Settings.Instance.GetBoolean("speechlowspeedenabled") == true &&
@@ -2777,7 +2786,7 @@ namespace MissionPlanner
                     }
 
                     // speech altitude warning - message high warning
-                    if (speechEnable && speechEngine != null &&
+                    if (speechEnabled() && speechEngine != null &&
                         (MainV2.comPort.logreadmode || comPort.BaseStream.IsOpen))
                     {
                         float warnalt = float.MaxValue;
@@ -2849,21 +2858,20 @@ namespace MissionPlanner
                         }
                     }
 
-                    // data loss warning - wait min of 10 seconds, ignore first 30 seconds of connect, repeat at 5 seconds interval
-                    if ((DateTime.Now - MainV2.comPort.MAV.lastvalidpacket).TotalSeconds > 10
+                    // data loss warning - wait min of 3 seconds, ignore first 30 seconds of connect, repeat at 5 seconds interval
+                    if ((DateTime.Now - MainV2.comPort.MAV.lastvalidpacket).TotalSeconds > 3
                         && (DateTime.Now - connecttime).TotalSeconds > 30
                         && (DateTime.Now - nodatawarning).TotalSeconds > 5
                         && (MainV2.comPort.logreadmode || comPort.BaseStream.IsOpen)
                         && MainV2.comPort.MAV.cs.armed)
                     {
-                        if (speechEnable && speechEngine != null)
+                        var msg = "WARNING No Data for " + (int)(DateTime.Now - MainV2.comPort.MAV.lastvalidpacket).TotalSeconds + " Seconds";
+                        MainV2.comPort.MAV.cs.messageHigh = msg;
+                        if (speechEnabled() && speechEngine != null)
                         {
                             if (MainV2.speechEngine.IsReady)
                             {
-                                MainV2.speechEngine.SpeakAsync("WARNING No Data for " +
-                                                               (int)
-                                                               (DateTime.Now - MainV2.comPort.MAV.lastvalidpacket)
-                                                               .TotalSeconds + " Seconds");
+                                MainV2.speechEngine.SpeakAsync(msg);
                                 nodatawarning = DateTime.Now;
                             }
                         }
@@ -3600,27 +3608,6 @@ namespace MissionPlanner
                     catch { }
                 }
             };
-
-            try
-            {
-                if (!MONO)
-                {
-#if !LIB
-                    log.Info("Load AltitudeAngel");
-                    AltitudeAngel.Configure();
-                    _ = AltitudeAngel.Initialize().ConfigureAwait(false);
-                    log.Info("Load AltitudeAngel... Done");
-#endif
-                }
-            }
-            catch (TypeInitializationException) // windows xp lacking patch level
-            {
-                //CustomMessageBox.Show("Please update your .net version. kb2468871");
-            }
-            catch (Exception ex)
-            {
-                Tracking.AddException(ex);
-            }
 
             this.ResumeLayout();
 

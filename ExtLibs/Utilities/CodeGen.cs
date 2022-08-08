@@ -9,6 +9,7 @@ using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -16,8 +17,11 @@ namespace MissionPlanner
 {
     public static class CodeGenRoslyn
     {
+        public static string lasterror = "";
+
         public static Assembly BuildCode(string filepath)
         {
+            lasterror = "";
             var syntaxTree =
                 CSharpSyntaxTree.ParseText(File.ReadAllText(filepath, Encoding.UTF8), path: filepath,
                     encoding: Encoding.UTF8);
@@ -27,6 +31,8 @@ namespace MissionPlanner
             var refFiles = refs.Where(a =>
                     !a.IsDynamic && !a.FullName.Contains("MissionPlanner.Drawing"))
                 .Select(a => a.Location);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                refFiles = refs.Where(a => !a.IsDynamic).Select(a => a.Location);
             var refmeta = refFiles.Select(a =>
             {
                 try
@@ -54,6 +60,7 @@ namespace MissionPlanner
                 {
                     // emitResult.Diagnostics
                     emitResult.Diagnostics.ForEach(a => Console.WriteLine("CodeGenRoslyn " + Path.GetFileName(filepath) + ": {0}", a.ToString()));
+                    lasterror = emitResult.Diagnostics.Aggregate("", (a, b) => a + b.ToString()+"\n");
                 }
                 else
                 {
@@ -67,8 +74,10 @@ namespace MissionPlanner
 
     public static class CodeGen
     {
+        public static string lasterror = "";
         public static object runCode(string code)
         {
+            lasterror = "";
             object answer = null;
 
             GetMathMemberNames();
@@ -118,6 +127,9 @@ namespace MissionPlanner
             var refFiles = refs.Where(a => !a.IsDynamic && !a.FullName.Contains("mscorlib") && !a.FullName.Contains("MissionPlanner.Drawing"))
                 .Select(a => a.Location);
 
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                refFiles = refs.Where(a => !a.IsDynamic && !a.FullName.Contains("mscorlib")).Select(a => a.Location);
+
             //add compiler parameters and assembly references
             CompilerParameters compilerParams = new CompilerParameters(refFiles.ToArray());
             compilerParams.CompilerOptions = "/target:library /langversion:5";
@@ -150,6 +162,9 @@ namespace MissionPlanner
             {
                 foreach (CompilerError error in results.Errors)
                     Console.WriteLine("CodeGen: Compile Error: Line: " + error.Line + ":" + error.Column + " " + error.ErrorText);
+
+                lasterror = results.Errors.Flatten<CompilerError>().Aggregate("",
+                    (a, error) => { return a + error.Line + ":" + error.Column + " " + error.ErrorText + "\n"; });
                 return null;
             }
 
@@ -174,6 +189,11 @@ namespace MissionPlanner
                     Console.WriteLine("CodeGen Compile " + Path.GetFileName(filename) + ": " + (error.IsWarning ? "Warning" : "Error") + ": Line: " + error.Line +
                                       ":" + error.Column + " " +
                                       error.ErrorText);
+
+                    lasterror = results.Errors.Flatten<CompilerError>().Aggregate("",
+                        (a, error2) => { return a + (error2.IsWarning ? "Warning" : "Error") + ": Line: " + error2.Line +
+                                               ":" + error2.Column + " " +
+                                               error2.ErrorText + "\n"; });
                     if (!error.IsWarning)
                         iserror = true;
                 }

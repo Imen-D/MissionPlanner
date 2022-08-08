@@ -547,6 +547,7 @@ namespace MissionPlanner.GCSViews
             myPane.Title.Text = "Tuning - Double click to change items";
             myPane.XAxis.Title.Text = "Time (s)";
             myPane.YAxis.Title.Text = "Unit";
+            myPane.YAxis.Title.FontSpec.Size += 2;
 
             // Show the x axis grid
             myPane.XAxis.MajorGrid.IsVisible = true;
@@ -906,13 +907,6 @@ namespace MissionPlanner.GCSViews
             POI.POIAdd(MouseDownStart);
         }
 
-        private void altitudeAngelSettingsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-#if !LIB
-            new Utilities.AltitudeAngel.AASettings().Show(this);
-#endif
-        }
-
         private void BUT_abort_script_Click(object sender, EventArgs e)
         {
             scriptthread.Abort();
@@ -957,7 +951,7 @@ namespace MissionPlanner.GCSViews
                     sb.AppendLine(Encoding.ASCII.GetString(((MAVLink.mavlink_statustext_t) message.data).text)
                         .TrimEnd('\0'));
                     return true;
-                });
+                }, (byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent);
                 bool ans = MainV2.comPort.doARM(!isitarmed);
                 MainV2.comPort.UnSubscribeToPacketType(sub);
                 if (ans == false)
@@ -1155,6 +1149,26 @@ namespace MissionPlanner.GCSViews
             new JoystickSetup().ShowUserControl();
         }
 
+
+        private void BUT_SendMSG_Click(object sender, EventArgs e)
+        {
+            if (!MainV2.comPort.BaseStream.IsOpen)
+                return;
+
+            // Send a message
+            try
+            {
+                string txt = "";
+                if (DialogResult.Cancel == InputBox.Show("Enter Message", "Enter Message to be logged", ref txt))
+                    return;
+                MainV2.comPort.send_text(5, txt);
+            }
+            catch
+            {
+                CustomMessageBox.Show(Strings.ErrorNoResponce, Strings.ERROR);
+            }
+        }
+
         private string tlogdir = Settings.Instance.LogDir;
 
         private void BUT_loadtelem_Click(object sender, EventArgs e)
@@ -1318,9 +1332,8 @@ namespace MissionPlanner.GCSViews
                 ((Control) sender).Enabled = false;
                 if (MainV2.comPort.MAV.cs.firmware == Firmwares.ArduPlane ||
                     MainV2.comPort.MAV.cs.firmware == Firmwares.Ateryx ||
-                    MainV2.comPort.MAV.cs.firmware == Firmwares.ArduRover)
-                    MainV2.comPort.setMode("Loiter");
-                if (MainV2.comPort.MAV.cs.firmware == Firmwares.ArduCopter2)
+                    MainV2.comPort.MAV.cs.firmware == Firmwares.ArduRover ||
+                    MainV2.comPort.MAV.cs.firmware == Firmwares.ArduCopter2)
                     MainV2.comPort.setMode("Loiter");
             }
             catch
@@ -2730,7 +2743,7 @@ namespace MissionPlanner.GCSViews
                 "rtspsrc location=rtsp://{0}:8554/fpv_stream latency=1 udp-reconnect=1 timeout=0 do-retransmission=false ! application/x-rtp ! rtph264depay ! h264parse ! queue ! avdec_h264 ! queue max-size-buffers=1 leaky=2 ! videoconvert ! video/x-raw,format=BGRx ! appsink name=outsink",
                 ipaddr);
 
-            GStreamer.LookForGstreamer();
+            GStreamer.gstlaunch = GStreamer.LookForGstreamer();
 
             if (!GStreamer.gstlaunchexists)
             {
@@ -3988,6 +4001,9 @@ namespace MissionPlanner.GCSViews
 
         private void quickView_DoubleClick(object sender, EventArgs e)
         {
+            if (MainV2.DisplayConfiguration.lockQuickView)
+                return;
+
             QuickView qv = (QuickView) sender;
 
             Form selectform = new Form
@@ -4258,7 +4274,7 @@ namespace MissionPlanner.GCSViews
 
                 GStreamer.StopAll();
 
-                GStreamer.LookForGstreamer();
+                GStreamer.gstlaunch = GStreamer.LookForGstreamer();
 
                 if (!GStreamer.gstlaunchexists)
                 {
@@ -4394,7 +4410,8 @@ namespace MissionPlanner.GCSViews
                 {
                     Name = "quickView" + (tableLayoutPanelQuick.Controls.Count + 1)
                 };
-                QV.DoubleClick += quickView_DoubleClick;
+                if (!MainV2.DisplayConfiguration.lockQuickView)
+                    QV.DoubleClick += quickView_DoubleClick;
                 QV.ContextMenuStrip = contextMenuStripQuickView;
                 QV.Dock = DockStyle.Fill;
                 QV.numberColor = ThemeManager.getQvNumberColor();
@@ -5079,7 +5096,7 @@ namespace MissionPlanner.GCSViews
 
             int max_length = 0;
             List<(string name, string desc)> fields = new List<(string, string)>();
-
+                        
             foreach (var field in test.GetProperties())
             {
                 // field.Name has the field's name.
@@ -5107,13 +5124,19 @@ namespace MissionPlanner.GCSViews
             }
 
             max_length += 25;
-            fields.Sort((a, b) => a.Item2.CompareTo(b.Item2));
+            fields.Sort((a, b) => {
+                var ans = CurrentState.GetGroupText(a.name).CompareTo(CurrentState.GetGroupText(b.name));
+                if (ans == 0) return a.Item2.CompareTo(b.Item2); 
+                return ans;
+            });
 
             int col_count = (int) (Screen.FromControl(this).Bounds.Width * 0.8f) / max_length;
             int row_count = fields.Count / col_count + ((fields.Count % col_count == 0) ? 0 : 1);
             int row_height = 20;
 
             selectform.SuspendLayout();
+
+            (string name, string desc) last = ("", "");
 
             int i = 1;
             foreach (var field in fields)
@@ -5182,6 +5205,16 @@ namespace MissionPlanner.GCSViews
                     chk_box.BackColor = Color.Green;
                 }
 
+                if (CurrentState.GetGroupText(field.name) != CurrentState.GetGroupText(last.name))
+                {
+                    selectform.Controls.Add(new System.Windows.Forms.Label()
+                    {
+                        Text = CurrentState.GetGroupText(field.name),
+                        Location = new Point(5 + (i / row_count) * (max_length + 5), 2 + (i % row_count) * row_height)
+                    });
+                    i++;
+                }
+
                 chk_box.Text = field.desc;
                 chk_box.Name = field.name;
                 chk_box.Tag = "custom";
@@ -5193,6 +5226,8 @@ namespace MissionPlanner.GCSViews
 
                 selectform.Controls.Add(chk_box);
                 i++;
+
+                last = field;
             }
 
             selectform.ResumeLayout();

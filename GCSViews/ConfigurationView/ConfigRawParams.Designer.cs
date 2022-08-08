@@ -50,14 +50,16 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             this.label2 = new System.Windows.Forms.Label();
             this.BUT_commitToFlash = new MissionPlanner.Controls.MyButton();
             this.chk_modified = new System.Windows.Forms.CheckBox();
+            this.BUT_refreshTable = new MissionPlanner.Controls.MyButton();
+            this.chk_none_default = new System.Windows.Forms.CheckBox();
             this.Params = new MissionPlanner.Controls.MyDataGridView();
             this.Command = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Value = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Default_value = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Units = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Options = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Desc = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.Fav = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.BUT_refreshTable = new MissionPlanner.Controls.MyButton();
             ((System.ComponentModel.ISupportInitialize)(this.Params)).BeginInit();
             this.SuspendLayout();
             // 
@@ -151,7 +153,21 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             resources.ApplyResources(this.chk_modified, "chk_modified");
             this.chk_modified.Name = "chk_modified";
             this.chk_modified.UseVisualStyleBackColor = true;
-            this.chk_modified.CheckedChanged += new System.EventHandler(this.chk_modified_CheckedChanged);
+            this.chk_modified.CheckedChanged += new System.EventHandler(this.chk_filter_CheckedChanged);
+            // 
+            // BUT_refreshTable
+            // 
+            resources.ApplyResources(this.BUT_refreshTable, "BUT_refreshTable");
+            this.BUT_refreshTable.Name = "BUT_refreshTable";
+            this.BUT_refreshTable.UseVisualStyleBackColor = true;
+            this.BUT_refreshTable.Click += new System.EventHandler(this.BUT_refreshTable_Click);
+            // 
+            // chk_none_default
+            // 
+            resources.ApplyResources(this.chk_none_default, "chk_none_default");
+            this.chk_none_default.Name = "chk_none_default";
+            this.chk_none_default.UseVisualStyleBackColor = true;
+            this.chk_none_default.CheckedChanged += new System.EventHandler(this.chk_filter_CheckedChanged);
             // 
             // Params
             // 
@@ -170,6 +186,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             this.Params.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Command,
             this.Value,
+            this.Default_value,
             this.Units,
             this.Options,
             this.Desc,
@@ -211,6 +228,13 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             resources.ApplyResources(this.Value, "Value");
             this.Value.Name = "Value";
             // 
+            // Default_value
+            // 
+            this.Default_value.FillWeight = 11F;
+            resources.ApplyResources(this.Default_value, "Default_value");
+            this.Default_value.Name = "Default_value";
+            this.Default_value.ReadOnly = true;
+            // 
             // Units
             // 
             this.Units.FillWeight = 9F;
@@ -241,15 +265,9 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             resources.ApplyResources(this.Fav, "Fav");
             this.Fav.Name = "Fav";
             // 
-            // BUT_refreshTable
-            // 
-            resources.ApplyResources(this.BUT_refreshTable, "BUT_refreshTable");
-            this.BUT_refreshTable.Name = "BUT_refreshTable";
-            this.BUT_refreshTable.UseVisualStyleBackColor = true;
-            this.BUT_refreshTable.Click += new System.EventHandler(this.BUT_refreshTable_Click);
-            // 
             // ConfigRawParams
             // 
+            this.Controls.Add(this.chk_none_default);
             this.Controls.Add(this.BUT_refreshTable);
             this.Controls.Add(this.chk_modified);
             this.Controls.Add(this.BUT_commitToFlash);
@@ -290,12 +308,14 @@ namespace MissionPlanner.GCSViews.ConfigurationView
         private System.Windows.Forms.Label label2;
         private MyButton BUT_commitToFlash;
         private System.Windows.Forms.CheckBox chk_modified;
+        private MyButton BUT_refreshTable;
         private System.Windows.Forms.DataGridViewTextBoxColumn Command;
         private System.Windows.Forms.DataGridViewTextBoxColumn Value;
+        private System.Windows.Forms.DataGridViewTextBoxColumn Default_value;
         private System.Windows.Forms.DataGridViewTextBoxColumn Units;
         private System.Windows.Forms.DataGridViewTextBoxColumn Options;
         private System.Windows.Forms.DataGridViewTextBoxColumn Desc;
         private System.Windows.Forms.DataGridViewCheckBoxColumn Fav;
-        private MyButton BUT_refreshTable;
+        private System.Windows.Forms.CheckBox chk_none_default;
     }
 }
