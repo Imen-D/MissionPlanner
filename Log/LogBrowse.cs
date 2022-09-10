@@ -28,6 +28,7 @@ using IronPython.Runtime;
 using Microsoft.Scripting.Hosting;
 using MissionPlanner.GCSViews.ConfigurationView;
 using ZedGraph; // Graphs
+using IronPython.Runtime.Operations;
 
 #if !LIB
 [assembly: ExtensionType(typeof(Dictionary<string, object>), typeof(LogBrowse.ext))]
@@ -223,6 +224,14 @@ namespace MissionPlanner.Log
 
             if (logdata != null)
                 logdata.Clear();
+
+
+            //map
+            splitContainerZgMap.Panel2Collapsed = true;
+            //dg
+            splitContainerButGrid.Panel2Collapsed = true;
+
+            this.LogBrowse_Resize(this,null);
 
             GC.Collect();
 
@@ -1145,7 +1154,7 @@ namespace MissionPlanner.Log
         private List<Tuple<DFLog.DFItem, double>> TestPython(DFLog dflog, DFLogBuffer logdata, string expression)
         {
 
-            var engine = Python.CreateEngine();
+            var engine = Python.CreateEngine(new Dictionary<string, object> { { "Debug", ScriptingRuntimeHelpers.True } });
 
             var paths = engine.GetSearchPaths();
             paths.Add(Settings.GetRunningDirectory() + "Lib.zip");
@@ -1196,7 +1205,7 @@ namespace MissionPlanner.Log
             
             List<Tuple<DFLog.DFItem, double>> answer = new List<Tuple<DFLog.DFItem, double>>();
 
-            if (!fieldsUsed.Any(x => dflog.logformat.ContainsKey(x.Key)))
+            if (!fieldsUsed.Any(x => dflog.logformat.ContainsKey(x.Key.Replace("[0]","").Replace("[1]", "").Replace("[2]", "").Replace("[3]", ""))))
                 return answer;
 
             scope.SetVariable("answer", answer);
@@ -1205,7 +1214,7 @@ namespace MissionPlanner.Log
 
             var exp = "[" + expression
                 .Split(new char[] {'(', ')', ',', ' ', '.', '-', '+', '*', '/'},
-                    StringSplitOptions.RemoveEmptyEntries).Where(a => dflog.logformat.Keys.Any(b => a == b))
+                    StringSplitOptions.RemoveEmptyEntries).Where(a => dflog.logformat.Keys.Any(b => a.Replace("[0]", "").Replace("[1]", "").Replace("[2]", "").Replace("[3]", "") == b))
                 .Aggregate("", (a, b) => a + ",\"" + b + "\"").TrimStart(',') + "]";
 
             var scriptsrc = String.Format(@"
@@ -1213,6 +1222,7 @@ import clr
 import sys
 import os
 import System
+import re
 clr.AddReference('MissionPlanner.Utilities')
 from MissionPlanner.Utilities import DFLog
 from math import *
@@ -1251,9 +1261,10 @@ def main():
     vars = {{}}
     a=0
     for line in logdata.GetEnumeratorType(System.Array[System.String]({0})):
-        if line.instance != '' and line.instance != '0':
-            continue
-        globals()[line.msgtype] = AttrDict(line.ToDictionary())
+        if line.instance != '':
+            globals()[line.msgtype] = {{ int(line.instance): AttrDict(line.ToDictionary()) }}
+        else:
+            globals()[line.msgtype] = AttrDict(line.ToDictionary())
         v = evaluate_expression()
         a += 1
         if (a % 10000) == 0:
@@ -1452,6 +1463,9 @@ main()
 
             // this is so precaned graphs draw on a singel axis
             if (isexpression)
+                unit = "";
+
+            if (unit == null)
                 unit = "";
 
             if (unit != "")
@@ -3513,9 +3527,8 @@ main()
 
                         dataGridView1.ColumnCount = colcount;
 
-                        int a = 0;
-                        while (a++ < 1000)
-                            dataGridView1.Rows.Add();
+                        if (dataGridView1.Rows.Count < 1000)
+                            dataGridView1.Rows.Add(1000 - dataGridView1.Rows.Count);
 
                         // populate first row
                         populateRowData(0, 0, 0);
