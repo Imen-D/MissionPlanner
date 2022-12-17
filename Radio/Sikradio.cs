@@ -360,7 +360,7 @@ S15: MAX_WINDOW=131
 
         private void BUT_upload_Click(object sender, EventArgs e)
         {
-            ProgramFirmware(false);
+            ProgramFirmware(false, false);
         }
 
         private void iHex_ProgressEvent(double completed)
@@ -1090,7 +1090,7 @@ S15: MAX_WINDOW=131
                     // 8 and 9
                     if (freq == Uploader.Frequency.FREQ_915)
                     {
-                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV)
+                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY)
                         {
                             MIN_FREQ.DataSource = Range(863000, 870000, 902000, 928000, 1000);
                             RMIN_FREQ.DataSource = Range(863000, 870000, 902000, 928000, 1000);
@@ -1113,7 +1113,7 @@ S15: MAX_WINDOW=131
                     }
                     else if (freq == Uploader.Frequency.FREQ_433)
                     {
-                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV)
+                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY)
                         {
                             MIN_FREQ.DataSource = Range(430000, 500, 440000);
                             RMIN_FREQ.DataSource = Range(430000, 500, 440000);
@@ -1132,7 +1132,7 @@ S15: MAX_WINDOW=131
                     }
                     else if (freq == Uploader.Frequency.FREQ_868)
                     {
-                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV)
+                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY)
                         {
                             MIN_FREQ.DataSource = Range(863000, 1000, 870000);
                             RMIN_FREQ.DataSource = Range(863000, 1000, 870000);
@@ -1150,7 +1150,7 @@ S15: MAX_WINDOW=131
                         }
                     }
 
-                    if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV)
+                    if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY)
                     {
                         // change control text label
                         label3.Text = "SF";
@@ -1216,7 +1216,8 @@ S15: MAX_WINDOW=131
                             Session.Board == Uploader.Board.DEVICE_ID_RFD900A
                             || Session.Board == Uploader.Board.DEVICE_ID_RFD900P ||
                             Session.Board == Uploader.Board.DEVICE_ID_RFD900X ||
-                            Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV)
+                            Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV||
+                            Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY)
                     {
                         TXPOWER.DataSource = Range(0, 1, 30);
                         RTXPOWER.DataSource = Range(0, 1, 30);
@@ -1887,10 +1888,15 @@ red LED solid - in firmware update mode");
 
         private void BUT_loadcustom_Click(object sender, EventArgs e)
         {
-            ProgramFirmware(true);
+            ProgramFirmware(true, false);
         }
 
-        void ProgramFirmware(bool Custom)
+        private void BUT_loadremote_Click(object sender, EventArgs e)
+        {
+            ProgramFirmware(true, true);
+        }
+
+        void ProgramFirmware(bool Custom, bool remote)
         {
             EnableProgrammingControls(false);
             EnableConfigControls(false);
@@ -1906,8 +1912,11 @@ red LED solid - in firmware update mode");
                 //port.Close();
 
                 RFD.RFD900.RFD900 RFD900 = null;
-                UpdateStatus("Putting in to bootloader mode");
-                switch (Session.PutIntoBootloaderMode())
+                if(remote)
+                    UpdateStatus("Putting remote radio to OTA mode");
+                else
+                    UpdateStatus("Putting in to bootloader mode");
+                switch (Session.PutIntoBootloaderMode(remote))
                 {
                     case RFD.RFD900.TSession.TMode.BOOTLOADER:
                         RFD900 = RFD.RFD900.RFD900APU.GetObjectForModem(Session);
@@ -1951,9 +1960,9 @@ red LED solid - in firmware update mode");
                     }
                 }
             }
-            catch
+            catch (Exception e)
             {
-
+                MessageBox.Show(e.Message);
             }
             EnableProgrammingControls(true);
             EnableConfigControls(true);
@@ -2311,5 +2320,7 @@ red LED solid - in firmware update mode");
         {
             
         }
+
+        
     }
 }

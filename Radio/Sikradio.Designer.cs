@@ -169,6 +169,7 @@
             this.RTI2 = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
+            this.BUT_loadremote = new MissionPlanner.Controls.MyButton();
             this.BUT_SetPPMFailSafe = new MissionPlanner.Controls.MyButton();
             this.BUT_loadcustom = new MissionPlanner.Controls.MyButton();
             this.BUT_resettodefault = new MissionPlanner.Controls.MyButton();
@@ -1400,6 +1401,13 @@
             resources.ApplyResources(this.label10, "label10");
             this.label10.Name = "label10";
             // 
+            // BUT_loadremote
+            // 
+            resources.ApplyResources(this.BUT_loadremote, "BUT_loadremote");
+            this.BUT_loadremote.Name = "BUT_loadremote";
+            this.BUT_loadremote.UseVisualStyleBackColor = true;
+            this.BUT_loadremote.Click += new System.EventHandler(this.BUT_loadremote_Click);
+            // 
             // BUT_SetPPMFailSafe
             // 
             resources.ApplyResources(this.BUT_SetPPMFailSafe, "BUT_SetPPMFailSafe");
@@ -1453,6 +1461,7 @@
             // Sikradio
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+            this.Controls.Add(this.BUT_loadremote);
             this.Controls.Add(this.Progressbar);
             this.Controls.Add(this.BUT_SetPPMFailSafe);
             this.Controls.Add(this.BUT_loadcustom);
@@ -1625,5 +1634,6 @@
         private System.Windows.Forms.Label label43;
         private System.Windows.Forms.ComboBox RBANDWIDTH;
         private System.Windows.Forms.Label label44;
+        private Controls.MyButton BUT_loadremote;
     }
 }

@@ -14,6 +14,7 @@ namespace RFD.RFD900
         MissionPlanner.Comms.ICommsSerial _Port;
         public Uploader.Board Board = Uploader.Board.FAILED;
         const int BOOTLOADER_BAUD = 115200;
+        bool remote_update = false;
 
         public TSession(MissionPlanner.Comms.ICommsSerial Port)
         {
@@ -85,7 +86,8 @@ namespace RFD.RFD900
         bool IsInBootloaderMode()
         {
             int PrevBaud = _Port.BaudRate;
-            _Port.BaudRate = BOOTLOADER_BAUD;
+            if(!remote_update)
+                _Port.BaudRate = BOOTLOADER_BAUD;
             Thread.Sleep(100);
             WriteBootloaderCode(Uploader.Code.EOC);
             Thread.Sleep(100);
@@ -199,9 +201,11 @@ namespace RFD.RFD900
             return _Mode;
         }
 
-        public TMode PutIntoBootloaderMode()
+        public TMode PutIntoBootloaderMode(bool remote)
         {
             var CurrentMode = GetMode();
+
+            remote_update = remote;
             switch (CurrentMode)
             {
                 case TMode.BOOTLOADER:
@@ -213,7 +217,17 @@ namespace RFD.RFD900
                     {
                         _Port.Write("\r\n");
                         Thread.Sleep(100);
-                        _Port.Write("AT&UPDATE\r\n");
+                        if (!remote)
+                            _Port.Write("AT&UPDATE\r\n");
+                        else
+                        {
+                            _Port.Write("RT&OTA\r\n");         // after we issue ROTA to remote radio, we exit at command
+                            //Thread.Sleep(100);                  // for make it like serial transparent
+                            if(WaitForToken("ERROR\n", 1500))
+                                throw new Exception("SF need to 5 and preamble length must higher than 17");
+                 
+                            Port.Write("ATO\r\n");
+                        }
                         Thread.Sleep(100);
                         CheckIfInBootloaderMode();
                     }
@@ -957,13 +971,25 @@ namespace RFD.RFD900
                     {
                         if (Freq == Uploader.Frequency.FREQ_433)
                             return new LORA_MAV433(Session);
-                        if (Freq == Uploader.Frequency.FREQ_868)
+                        else if (Freq == Uploader.Frequency.FREQ_868)
                             return new LORA_MAV868(Session);
-                        if (Freq == Uploader.Frequency.FREQ_915)
+                        else if (Freq == Uploader.Frequency.FREQ_915)
                             return new LORA_MAV915(Session);
-                        return null;
+                        else
+                            return null;
                     }
-                 default:
+                case Uploader.Board.DEVICE_ID_LORA_DIVERSITY:
+                    {
+                        if (Freq == Uploader.Frequency.FREQ_433)
+                            return new LORA_DUAL_MAV433(Session);
+                        else if (Freq == Uploader.Frequency.FREQ_868)
+                            return new LORA_DUAL_MAV915(Session);
+                        else if (Freq == Uploader.Frequency.FREQ_915)
+                            return new LORA_DUAL_MAV915(Session);
+                        else
+                            return null;
+                    }
+                default:
                     return null;
             }
         }
@@ -1117,6 +1143,50 @@ namespace RFD.RFD900
             get
             {
                 return Uploader.Board.DEVICE_ID_LORA_MAV;
+            }
+        }
+    }
+
+    public class LORA_DUAL_MAV915 : RFD900APU
+    {
+        public LORA_DUAL_MAV915(TSession Session)
+            : base(Session)
+        {
+
+        }
+
+        protected override string[] GetFirmwareSearchTokens()
+        {
+            return new string[] { "PRH_DUAL_LINK915" };
+        }
+
+        public override Uploader.Board Board
+        {
+            get
+            {
+                return Uploader.Board.DEVICE_ID_LORA_DIVERSITY;
+            }
+        }
+    }
+
+    public class LORA_DUAL_MAV433 : RFD900APU
+    {
+        public LORA_DUAL_MAV433(TSession Session)
+            : base(Session)
+        {
+
+        }
+
+        protected override string[] GetFirmwareSearchTokens()
+        {
+            return new string[] { "PRH_DUAL_LINK433" };
+        }
+
+        public override Uploader.Board Board
+        {
+            get
+            {
+                return Uploader.Board.DEVICE_ID_LORA_DIVERSITY;
             }
         }
     }
