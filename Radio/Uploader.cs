@@ -15,6 +15,8 @@ namespace MissionPlanner.Radio
             // device IDs XXX should come with the firmware image...
             DEVICE_ID_LORA_MAV = 0x17,
             DEVICE_ID_SKY_DB30 = 0x15,
+            DEVICE_ID_LORA_DIVERSITY = 0x18,
+
             DEVICE_ID_RF50 = 0x4d,
             DEVICE_ID_HM_TRP = 0x4e,
             DEVICE_ID_RFD900 = 0X42,
@@ -62,6 +64,7 @@ namespace MissionPlanner.Radio
             FAILED = 0x11
         }
 
+
         private bool banking;
         private int bytes_processed;
 
@@ -71,6 +74,7 @@ namespace MissionPlanner.Radio
         public ICommsSerial port;
 
         public int PROG_MULTI_MAX = 32; // maximum number of bytes in a PROG_MULTI command
+        public int PROG_MULTI_REMOTE = 200;
         public int READ_MULTI_MAX = 255; // largest read that can be requested
 
 
@@ -133,21 +137,17 @@ namespace MissionPlanner.Radio
 
         private void upload_and_verify(IHex image_data)
         {
-            if (image_data.bankingDetected && ((byte)id & 0x80) != 0x80 && id != Board.DEVICE_ID_LORA_MAV)
+            if (image_data.bankingDetected && ((byte)id & 0x80) != 0x80 && id != Board.DEVICE_ID_LORA_MAV && id != Board.DEVICE_ID_LORA_DIVERSITY)
             {
                 log("This Firmware requires banking support");
                 throw new Exception("This Firmware requires banking support");
             }
 
-            if (((byte)id & 0x80) == 0x80 || id == Board.DEVICE_ID_LORA_MAV)
+            if (((byte)id & 0x80) == 0x80 || id == Board.DEVICE_ID_LORA_MAV || id == Board.DEVICE_ID_LORA_DIVERSITY)
             {
                 banking = true;
-                log("Using 24bit addresses");
+                log("Using 32bit addresses");
             }
-
-            // erase the program area first
-            log("erasing program flash\n");
-            cmdErase();
 
             // progress fractions
             bytes_to_process = 0;
@@ -157,6 +157,10 @@ namespace MissionPlanner.Radio
             }
             bytes_to_process *= 2; // once to program, once to verify
             bytes_processed = 0;
+
+            // erase the program area first
+            log("erasing program flash\n");
+            cmdErase();
 
             // program the flash blocks
             log("programming\n");
@@ -203,6 +207,8 @@ namespace MissionPlanner.Radio
 
             if (id == Board.DEVICE_ID_LORA_MAV)
                 MAX_WRITE_BYTE = 64;
+            else if (id == Board.DEVICE_ID_LORA_DIVERSITY)
+                MAX_WRITE_BYTE = PROG_MULTI_REMOTE;
             else
                 MAX_WRITE_BYTE = PROG_MULTI_MAX;
             // Chunk the block in units of no more than what the bootloader
@@ -276,6 +282,10 @@ namespace MissionPlanner.Radio
         private void cmdErase()
         {
             send(Code.CHIP_ERASE);
+            if(id == Board.DEVICE_ID_LORA_DIVERSITY)
+            {
+
+            }
             send(Code.EOC);
 
             // sleep for 2 second - erase seems to take about 2 seconds
@@ -370,15 +380,17 @@ namespace MissionPlanner.Radio
                 {
                     log("flash verification failed\n");
                     throw new Exception("VERIFY FAIL");
+                    System.Windows.Forms.MessageBox.Show("Flash verification fail");
                 }
             }
-
             getSync();
         }
 
         private void cmdReboot()
         {
             send(Code.REBOOT);
+            if(id == Board.DEVICE_ID_LORA_DIVERSITY || id == Board.DEVICE_ID_LORA_MAV)
+                send(Code.EOC);
         }
 
         private void checkDevice()
@@ -394,7 +406,7 @@ namespace MissionPlanner.Radio
             // XXX should be getting valid board/frequency data from firmware file
             if ((id != Board.DEVICE_ID_HM_TRP) && (id != Board.DEVICE_ID_RF50) && (id != Board.DEVICE_ID_RFD900) &&
                 (id != Board.DEVICE_ID_RFD900A) && (id != Board.DEVICE_ID_RFD900P) && (id != Board.DEVICE_ID_RFD900U) &&
-                (id != Board.DEVICE_ID_LORA_MAV))
+                (id != Board.DEVICE_ID_LORA_MAV) && (id != Board.DEVICE_ID_LORA_DIVERSITY))
                 throw new Exception("bootloader device ID mismatch - device:" + id);
 
             getSync();
