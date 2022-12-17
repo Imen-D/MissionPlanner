@@ -10,6 +10,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -196,20 +197,26 @@ namespace MissionPlanner.GCSViews.ConfigurationView
             foreach (var deviceInfo in ports)
             {
                 long? devid = detectedboardid;
+                long[] devids = null;
 
                 // make best guess at board_id based on usb info
                 if (!devid.HasValue)
-                    devid = APFirmware.GetBoardID(deviceInfo);
+                    devids = APFirmware.GetBoardID(deviceInfo);
 
-                if (devid.HasValue && devid.Value != 0 || alloptions == true)
+                if (devid.HasValue && devid.Value != 0 || alloptions == true || devids != null)
                 {
                     log.InfoFormat("{0}: {1} - {2}", deviceInfo.name, deviceInfo.description, deviceInfo.board);
+
+                    if (devids == null && devid.HasValue)
+                        devids = new long[] {devid.Value};
+                    else if (devids == null)
+                        devids = new long[]{};
 
                     var baseurl = "";
 
                     // get the options for this device
                     var fwitems = APFirmware.Manifest.Firmware.Where(a =>
-                        a.BoardId == devid && a.MavType == mavtype.ToString() &&
+                        devids.Any(devidlocal => devidlocal == a.BoardId) && a.MavType == mavtype.ToString() &&
                         a.MavFirmwareVersionType == REL_Type.ToString()).ToList();
 
                     if (alloptions)
@@ -244,23 +251,17 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                         var starttime = DateTime.Now;
 
                         // Create a request using a URL that can receive a post. 
-                        WebRequest request = WebRequest.Create(baseurl);
-                        if (!String.IsNullOrEmpty(Settings.Instance.UserAgent))
-                            ((HttpWebRequest)request).UserAgent = Settings.Instance.UserAgent;
-                        request.Timeout = 10000;
-                        // Set the Method property of the request to POST.
-                        request.Method = "GET";
-                        // Get the request stream.
-                        Stream dataStream; //= request.GetRequestStream();
-                                           // Get the response (using statement is exception safe)
-                        using (WebResponse response = request.GetResponse())
+                        var client = new HttpClient();
+                        client.DefaultRequestHeaders.Add("User-Agent", Settings.Instance.UserAgent);
+                        client.Timeout = TimeSpan.FromSeconds(30);
+                        using (var response = client.GetAsync(baseurl))
                         {
                             // Display the status.
-                            log.Info(((HttpWebResponse)response).StatusDescription);
+                            log.Info(baseurl + " " + response.Result.ReasonPhrase);
                             // Get the stream containing content returned by the server.
-                            using (dataStream = response.GetResponseStream())
+                            using (var dataStream = response.Result.Content.ReadAsStreamAsync().Result)
                             {
-                                long bytes = response.ContentLength;
+                                long bytes = int.Parse(response.Result.Content.Headers.First(h => h.Key.Equals("Content-Length")).Value.First());
                                 long contlen = bytes;
 
                                 byte[] buf1 = new byte[1024];
@@ -269,9 +270,8 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                                 {
                                     fw_Progress1(0, Strings.DownloadingFromInternet);
 
-                                    long length = response.ContentLength;
+                                    long length = int.Parse(response.Result.Content.Headers.First(h => h.Key.Equals("Content-Length")).Value.First());
                                     long progress = 0;
-                                    dataStream.ReadTimeout = 30000;
 
                                     while (dataStream.CanRead)
                                     {
@@ -294,7 +294,6 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                                 }
                                 dataStream.Close();
                             }
-                            response.Close();
                         }
 
                         var timetook = (DateTime.Now - starttime).TotalMilliseconds;
@@ -338,7 +337,7 @@ namespace MissionPlanner.GCSViews.ConfigurationView
                 */
             }
 
-            CustomMessageBox.Show("Failed to detect port to upload to", Strings.ERROR);
+            CustomMessageBox.Show("Failed to detect port to upload to (Unknown VID/PID or Board String)\r\nPlease try Disconnect/Reconnect and upload while on this screen", Strings.ERROR);
             return;
         }
 

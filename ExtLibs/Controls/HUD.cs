@@ -31,12 +31,13 @@ using SkiaSharp;
 
 namespace MissionPlanner.Controls
 {
-    public class HUD2: HUD
+    public class HUD2 : HUD
     {
-        public HUD2(): base()
+        public HUD2() : base()
         {
             started = true;
             opengl = false;
+            InitializeComponent();
         }
 
         private Bitmap bitmap;
@@ -101,6 +102,21 @@ namespace MissionPlanner.Controls
                 Bitmap.Dispose();
                 bitmap = null;
             }
+        }
+
+        private void InitializeComponent()
+        {
+            this.SuspendLayout();
+            // 
+            // HUD2
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.hudcolor = System.Drawing.Color.LightGray;
+            this.Name = "HUD2";
+            this.Size = new System.Drawing.Size(466, 354);
+            this.VSync = false;
+            this.ResumeLayout(false);
+
         }
     }
 
@@ -381,6 +397,20 @@ namespace MissionPlanner.Controls
         public string speedunit { get; set; } = "";
 
         public string altunit { get; set; } = "";
+
+        [System.ComponentModel.Browsable(true), System.ComponentModel.Category("Values")]
+        public float load
+        {
+            get { return _load; }
+            set
+            {
+                if (_load != value)
+                {
+                    _load = value;
+                    this.Invalidate();
+                }
+            }
+        }
 
         [System.ComponentModel.Browsable(true), System.ComponentModel.Category("Values")]
         public float alt
@@ -2707,6 +2737,16 @@ namespace MissionPlanner.Controls
                     graphicsObject.DrawPolygon(this._whitePen, AOA_arrow);
                 }
 
+
+                // Text line positions for all text at bottom of the screen
+                int yBotOffset = (fontsize >= 8) ? (fontsize / 3) : 2; // this replaces fontoffset for bottom lines
+                int yTextOffset = (fontsize + yBotOffset + 2); // creates a 25% font size space between multiple lines
+                int xPos = fontsize; // spaces text off left 1 character
+                Int32[] yPos = new Int32[] {this.Height - 2*yTextOffset - yBotOffset - 4,  //line upper
+                                  this.Height - yTextOffset - yBotOffset - 4 };            //line lower
+                
+                //Console.WriteLine("HUD Height " + this.Height + " fontsize " + fontsize + " offset " + yBotOffset + " ypos0: " + yPos[0] + " ypos1: " + yPos[1]);
+
                 // battery
                 if (batteryon)
                 {
@@ -2735,35 +2775,41 @@ namespace MissionPlanner.Controls
                         else icon = HUDT.batt_1;
                     }
 
+                    int textIdx = 0;
+
                     if (displayicons)
                     {
                         var bottomsize = ((fontsize + 2) * 3) + fontoffset - 2;
                         DrawImage(icon, 3, this.Height - bottomsize, bottomsize / 2, bottomsize);
 
                         text = _batterylevel.ToString("0.00v") + " " + _current.ToString("0.0 A") + " " + (_batteryremaining) + "%";
-                        drawstring(text, font, fontsize + 1, textcolor, bottomsize / 2 + 6, this.Height - ((fontsize + 2) * 3) - fontoffset);
+                        drawstring(text, font, fontsize + 1, textcolor, bottomsize / 2 + 6, yPos[1]);
                         if (displayCellVoltage & (_batterycellcount != 0))
-                            drawstring((_batterylevel / _batterycellcount).ToString("0.00v"), font, fontsize, textcolor, bottomsize / 2 + 6, this.Height - (fontsize * 2) - fontoffset);
+                            drawstring((_batterylevel / _batterycellcount).ToString("0.00v"), font, fontsize, textcolor, bottomsize / 2 + 6, yPos[1]);
 
                     }
                     else
                     {
 
-                        text = HUDT.Bat + "1 " + _batterylevel.ToString("0.00v") + " " + _current.ToString("0.0 A") + " " + (_batteryremaining) + "%";
-
-                        drawstring(text, font, fontsize + 2, textcolor, fontsize,
-                            this.Height - ((fontsize + 2) * 3) - fontoffset);
-
                         if (displayCellVoltage & (_batterycellcount != 0))
-                            drawstring(HUDT.Cell + " " + (_batterylevel / _batterycellcount).ToString("0.00v"), font, fontsize + 2, textcolor, fontsize, this.Height - (fontsize * 2) - fontoffset);
+                            drawstring(HUDT.Cell + " " + (_batterylevel / _batterycellcount).ToString("0.00v"), font, fontsize + 2, textcolor, xPos, yPos[1]);
                         else if (_batterylevel2 > 0)
                         {
                             text = HUDT.Bat + "2 " + _batterylevel2.ToString("0.00v") + " " + _current2.ToString("0.0 A") + " " +
                                    (_batteryremaining2) + "%";
 
-                            drawstring(text, font, fontsize + 2, textcolor, fontsize,
-                                this.Height - ((fontsize + 2) * 2) - fontoffset);
+                            drawstring(text, font, fontsize, textcolor, xPos, yPos[1]);
+                        } else {
+                            textIdx=1;
                         }
+
+                       
+
+                        text = HUDT.Bat + "1 " + _batterylevel.ToString("0.00v") + " " + _current.ToString("0.0 A") + " " + (_batteryremaining) + "%";
+                        
+                        drawstring(text, font, fontsize, textcolor, xPos, yPos[textIdx]);
+
+
                     }
                 }
 
@@ -2827,6 +2873,9 @@ namespace MissionPlanner.Controls
                             continue;
 
 
+                        int textIdx = (a == 0 && _gpsfix2 > 0) ? 0:1; 
+
+
                         //If displayicons is true then we display image icons instead of text on GPS staus
                         if (displayicons)
                         {
@@ -2844,9 +2893,9 @@ namespace MissionPlanner.Controls
                         else
                         {
 
-                            drawstring(gps, font, fontsize + 2, col, this.Width - 13 * fontsize,
-                                this.Height - ((fontsize + 2) * 3) - fontoffset + ((fontsize + 2) * a));
+                            drawstring(gps, font, fontsize, col, this.Width - 13 * fontsize,yPos[textIdx]);
                         }
+                        
                         a++;
                     }
                 }
@@ -2977,7 +3026,7 @@ namespace MissionPlanner.Controls
                     }
                     else
                     {
-                        vibehitzone = new Rectangle(this.Width - 18 * fontsize, this.Height - ((fontsize + 2) * 3) - fontoffset, 40, fontsize * 2);
+                        vibehitzone = new Rectangle(this.Width - 18 * fontsize, yPos[1], 40, fontsize * 2);
                     }
 
                     if (vibex > 30 || vibey > 30 || vibez > 30)
@@ -3020,6 +3069,9 @@ namespace MissionPlanner.Controls
                     }
                 }
 
+                if (load == 100)
+                    drawstring("CPU", font, fontsize + 2, _redBrush, vibehitzone.Right, vibehitzone.Y);
+
                 if (displayekf)
                 {
                     if (displayicons)
@@ -3029,7 +3081,7 @@ namespace MissionPlanner.Controls
                     }
                     else
                     {
-                        ekfhitzone = new Rectangle(this.Width - 23 * fontsize, this.Height - ((fontsize + 2) * 3) - fontoffset, 40, fontsize * 2);
+                        ekfhitzone = new Rectangle(this.Width - 23 * fontsize,yPos[1], 40, fontsize * 2);
                     }
 
                     if (ekfstatus > 0.5)
@@ -3152,6 +3204,8 @@ namespace MissionPlanner.Controls
         /// pth for drawstring
         /// </summary>
         private readonly GraphicsPath pth = new GraphicsPath();
+
+        private float _load;
 
         float calcfontsize(string text, Font font, float fontsize, SolidBrush brush, int targetwidth)
         {
@@ -3623,4 +3677,4 @@ namespace MissionPlanner.Controls
             }
         }
     }
-}
+ }

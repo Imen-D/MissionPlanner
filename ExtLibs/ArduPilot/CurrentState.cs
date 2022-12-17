@@ -204,6 +204,9 @@ namespace MissionPlanner
 
             var t = Type.GetType("Mono.Runtime");
             MONO = t != null;
+
+            // Initialize firmware type from settings file
+            Enum.TryParse(Settings.Instance.APMFirmware, out firmware);
         }
 
         // propery name, Name   Name starts with MAV_ will link to named_value_float messages
@@ -219,6 +222,16 @@ namespace MissionPlanner
         public float customfield7 { get; set; }
         public float customfield8 { get; set; }
         public float customfield9 { get; set; }
+        public float customfield10 { get; set; }
+        public float customfield11 { get; set; }
+        public float customfield12 { get; set; }
+        public float customfield13 { get; set; }
+        public float customfield14 { get; set; }
+        public float customfield15 { get; set; }
+        public float customfield16 { get; set; }
+        public float customfield17 { get; set; }
+        public float customfield18 { get; set; }
+        public float customfield19 { get; set; }
 
         // orientation - rads
         [DisplayText("Roll (deg)")]
@@ -338,11 +351,11 @@ namespace MissionPlanner
         [GroupText("Position")]
         public float satcount { get; set; }
 
-        [DisplayText("Horizontal Accuracy")]
+        [DisplayText("H Acc (m)")]
         [GroupText("Position")]
         public float gpsh_acc { get; private set; }
 
-        [DisplayText("Vertical Accuracy")]
+        [DisplayText("V Acc (m)")]
         [GroupText("Position")]
         public float gpsv_acc { get; private set; }
 
@@ -390,11 +403,11 @@ namespace MissionPlanner
         public float groundcourse2 { get; set; }
 
 
-        [DisplayText("Horizontal Accuracy")]
+        [DisplayText("H Acc2 (m)")]
         [GroupText("Position")]
         public float gpsh_acc2 { get; private set; }
 
-        [DisplayText("Vertical Accuracy")]
+        [DisplayText("V Acc2 (m)")]
         [GroupText("Position")]
         public float gpsv_acc2 { get; private set; }
 
@@ -1576,8 +1589,8 @@ namespace MissionPlanner
             {
                 var dist = DistToHome / multiplierdist;
 
-                //if (dist < 5)
-                //return 0;
+                if (dist == 0)
+                    return 0;
 
                 var altdiff = (float)(_altasl - TrackerLocation.Alt);
 
@@ -1606,10 +1619,10 @@ namespace MissionPlanner
                                                  //bearing = bearing - 180;//absolut return direction
                                                  //if (bearing < 0) bearing += 360;//normalization
 
-                //var dist = DistToHome / multiplierdist;
+                var dist = DistToHome / multiplierdist;
 
-                //if (dist < 5)
-                //return 0;
+                if (dist == 0)
+                    return 0;
 
                 return (float)bearing;
             }
@@ -1740,20 +1753,6 @@ namespace MissionPlanner
         [GroupText("Sensor")] public int press_temp { get; set; }
         [GroupText("Sensor")] public float press_abs2 { get; set; }
         [GroupText("Sensor")] public int press_temp2 { get; set; }
-
-        // sensor offsets
-        [GroupText("Calibration")] public int mag_ofs_x { get; set; }
-        [GroupText("Calibration")] public int mag_ofs_y { get; set; }
-        [GroupText("Calibration")] public int mag_ofs_z { get; set; }
-        [GroupText("Calibration")] public float mag_declination { get; set; }
-        [GroupText("Calibration")] public int raw_press { get; set; }
-        [GroupText("Calibration")] public int raw_temp { get; set; }
-        [GroupText("Calibration")] public float gyro_cal_x { get; set; }
-        [GroupText("Calibration")] public float gyro_cal_y { get; set; }
-        [GroupText("Calibration")] public float gyro_cal_z { get; set; }
-        [GroupText("Calibration")] public float accel_cal_x { get; set; }
-        [GroupText("Calibration")] public float accel_cal_y { get; set; }
-        [GroupText("Calibration")] public float accel_cal_z { get; set; }
 
         // requested stream rates
         [GroupText("Telem")] public int rateattitude { get; set; }
@@ -2909,30 +2908,6 @@ namespace MissionPlanner
                         }
 
                         break;
-                    // SENSOR_OFFSET message was removed in Copter-4.2
-                    case (uint)MAVLink.MAVLINK_MSG_ID.SENSOR_OFFSETS:
-
-                        {
-                            var sensofs = mavLinkMessage.ToStructure<MAVLink.mavlink_sensor_offsets_t>();
-
-                            mag_ofs_x = sensofs.mag_ofs_x;
-                            mag_ofs_y = sensofs.mag_ofs_y;
-                            mag_ofs_z = sensofs.mag_ofs_z;
-                            mag_declination = sensofs.mag_declination;
-
-                            raw_press = sensofs.raw_press;
-                            raw_temp = sensofs.raw_temp;
-
-                            gyro_cal_x = sensofs.gyro_cal_x;
-                            gyro_cal_y = sensofs.gyro_cal_y;
-                            gyro_cal_z = sensofs.gyro_cal_z;
-
-                            accel_cal_x = sensofs.accel_cal_x;
-                            accel_cal_y = sensofs.accel_cal_y;
-                            accel_cal_z = sensofs.accel_cal_z;
-                        }
-
-                        break;
                     case (uint)MAVLink.MAVLINK_MSG_ID.ATTITUDE:
 
 
@@ -3545,11 +3520,11 @@ namespace MissionPlanner
                             if (field == null)
                             {
                                 short i;
-                                for (i = 0; i < 10; i++)
+                                for (i = 0; i < 20; i++)
                                 {
                                     if (!custom_field_names.ContainsKey("customfield" + i.ToString())) break;
                                 }
-                                if (i < 10)
+                                if (i < 20)
                                 {
                                     field = "customfield" + i.ToString();
                                     custom_field_names.Add(field, name);
@@ -3590,6 +3565,36 @@ namespace MissionPlanner
                                         break;
                                     case "customfield9":
                                         customfield9 = value;
+                                        break;
+                                    case "customfield10":
+                                        customfield10 = value;
+                                        break;
+                                    case "customfield11":
+                                        customfield11 = value;
+                                        break;
+                                    case "customfield12":
+                                        customfield12 = value;
+                                        break;
+                                    case "customfield13":
+                                        customfield13 = value;
+                                        break;
+                                    case "customfield14":
+                                        customfield14 = value;
+                                        break;
+                                    case "customfield15":
+                                        customfield15 = value;
+                                        break;
+                                    case "customfield16":
+                                        customfield16 = value;
+                                        break;
+                                    case "customfield17":
+                                        customfield17 = value;
+                                        break;
+                                    case "customfield18":
+                                        customfield18 = value;
+                                        break;
+                                    case "customfield19":
+                                        customfield19 = value;
                                         break;
                                     default:
                                         break;
