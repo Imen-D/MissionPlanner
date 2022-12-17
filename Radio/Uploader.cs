@@ -205,9 +205,7 @@ namespace MissionPlanner.Radio
 
             int MAX_WRITE_BYTE = 0;
 
-            if (id == Board.DEVICE_ID_LORA_MAV)
-                MAX_WRITE_BYTE = 64;
-            else if (id == Board.DEVICE_ID_LORA_DIVERSITY)
+            if (id == Board.DEVICE_ID_LORA_MAV || id == Board.DEVICE_ID_LORA_DIVERSITY)
                 MAX_WRITE_BYTE = PROG_MULTI_REMOTE;
             else
                 MAX_WRITE_BYTE = PROG_MULTI_MAX;
