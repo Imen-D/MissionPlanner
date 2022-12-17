@@ -1171,6 +1171,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                 if (messageType == (byte) MAVLINK_MSG_ID.MISSION_REQUEST_LIST ||
                     messageType == (byte) MAVLINK_MSG_ID.MISSION_REQUEST_PARTIAL_LIST ||
                     messageType == (byte) MAVLINK_MSG_ID.MISSION_REQUEST ||
+                    messageType == (byte) MAVLINK_MSG_ID.MISSION_REQUEST_INT ||
                     messageType == (byte) MAVLINK_MSG_ID.PARAM_REQUEST_LIST ||
                     messageType == (byte) MAVLINK_MSG_ID.PARAM_REQUEST_READ ||
                     messageType == (byte) MAVLINK_MSG_ID.RALLY_FETCH_POINT ||
@@ -1796,7 +1797,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                                     MAVLINK_MSG_ID.PARAM_VALUE,
                                     new mavlink_param_value_t((float) a.Value, (ushort) mavlist.Count,
                                         0,
-                                        a.Name.MakeBytesSize(16), (byte) a.Type)));
+                                        a.Name.MakeBytesSize(16), (byte) a.Type), sysid, compid));
                             });
 
                             UnSubscribeToPacketType(sub2);
@@ -2379,6 +2380,29 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
             throw new NotImplementedException();
         }
 
+        public bool doDFUBoot(byte sysid, byte compid)
+        {
+            doCommand(sysid, compid, MAV_CMD.PREFLIGHT_REBOOT_SHUTDOWN,
+                42, 24, 71, 99, 0, 0, 0, false);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Control high latency mode
+        /// </summary>
+        /// <param name="onoff">true to enable, false to disable</param>
+        /// <returns></returns>
+        public bool doHighLatency(bool onoff= false)
+        {
+            int param1 = onoff ? 1 : 0;
+
+            var ans1 = doCommand((byte)sysidcurrent, (byte)compidcurrent, MAV_CMD.CONTROL_HIGH_LATENCY,
+                    param1, 0, 0, 0, 0, 0, 0);
+
+            return ans1;
+        }
+
         /// <summary>
         /// reboot the vehicle
         /// </summary>
@@ -2398,12 +2422,27 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
             {
                 var ans1 = doCommand((byte) sysidcurrent, (byte) compidcurrent, MAV_CMD.PREFLIGHT_REBOOT_SHUTDOWN,
                     param1, 0, 0, 0, 0, 0, 0);
-                if (ans1)
-                    return true;
-                var ans2 = doCommand((byte) sysidcurrent, (byte) compidcurrent, MAV_CMD.PREFLIGHT_REBOOT_SHUTDOWN, 1, 0,
+                var ans2 = false;
+                if (!ans1)
+                {
+                    ans2 = doCommand((byte)sysidcurrent, (byte)compidcurrent, MAV_CMD.PREFLIGHT_REBOOT_SHUTDOWN, 1, 0,
                     0, 0, 0, 0, 0);
-                if (ans2)
+                }
+                // Successful reboot
+                if (ans1 || ans2)
+                {
+                    // Not going into bootloader and on a serial connection
+                    if (!bootloadermode && (BaseStream is SerialPort))
+                    {
+                        // Direct USB will disconnect after a reboot, wait and see if we should re-connect
+                        Thread.Sleep(500);
+                        if (!BaseStream.IsOpen)
+                        {
+                            Open(true);
+                        }
+                    }
                     return true;
+                }
 
                 giveComport = false;
                 return false;
@@ -2509,6 +2548,9 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
             float p4,
             float p5, float p6, float p7, bool requireack = true, Action uicallback = null)
         {
+            if (BaseStream == null || BaseStream.IsOpen == false)
+                return false;
+
             MAVLinkMessage buffer;
 
             mavlink_command_long_t req = new mavlink_command_long_t
@@ -2666,6 +2708,9 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
             int p5, int p6, float p7, bool requireack = true, Action uicallback = null,
             MAV_FRAME frame = MAV_FRAME.GLOBAL)
         {
+            if (BaseStream == null || BaseStream.IsOpen == false)
+                return false;
+
             MAVLinkMessage buffer;
 
             mavlink_command_int_t req = new mavlink_command_int_t()
@@ -3344,7 +3389,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                         // received a packet, but not what we requested
                         if (index != wp.seq)
                         {
-                            generatePacket((byte) MAVLINK_MSG_ID.MISSION_REQUEST, req);
+                            generatePacket((byte) MAVLINK_MSG_ID.MISSION_REQUEST_INT, req);
                             continue;
                         }
 
@@ -3359,10 +3404,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                         loc.lat = ((wp.x / 1.0e7));
                         loc.lng = ((wp.y / 1.0e7));
 
-                        if (loc.id == (ushort) MAV_CMD.DO_DIGICAM_CONTROL ||
-                            loc.id == (ushort) MAV_CMD.DO_DIGICAM_CONFIGURE ||
-                            loc.id == (ushort) MAV_CMD.ATTITUDE_TIME ||
-                            loc.id == (ushort) MAV_CMD.DO_GIMBAL_MANAGER_PITCHYAW)
+                        if (!Locationwp.isLocationCommand(loc.id))
                         {
                             loc.lat = wp.x;
                             loc.lng = wp.y;
@@ -3827,10 +3869,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                     frame = (byte) frame
                 };
 
-                if (loc.id == (ushort) MAV_CMD.DO_DIGICAM_CONTROL || 
-                    loc.id == (ushort) MAV_CMD.DO_DIGICAM_CONFIGURE || 
-                    loc.id == (ushort) MAV_CMD.ATTITUDE_TIME ||
-                    loc.id == (ushort) MAV_CMD.DO_GIMBAL_MANAGER_PITCHYAW)
+                if (!Locationwp.isLocationCommand(loc.id))
                 {
                     req.y = (int) (loc.lng);
                     req.x = (int) (loc.lat);
@@ -4206,12 +4245,24 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                 MAVLinkMessage buffer = await readPacketAsync().ConfigureAwait(false);
                 if (buffer.Length > 5)
                 {
-                    if (buffer.msgid == (byte) MAVLINK_MSG_ID.MISSION_REQUEST && buffer.sysid == sysid &&
+                    if (buffer.msgid == (byte)MAVLINK_MSG_ID.MISSION_REQUEST && buffer.sysid == sysid &&
                         buffer.compid == compid)
                     {
                         var ans = buffer.ToStructure<mavlink_mission_request_t>();
 
                         log.InfoFormat("getRequestedWPNo seq {0} ts {1} tc {2}", ans.seq, ans.target_system,
+                            ans.target_component);
+
+                        giveComport = false;
+
+                        return ans.seq;
+                    }
+                    if (buffer.msgid == (byte)MAVLINK_MSG_ID.MISSION_REQUEST_INT && buffer.sysid == sysid &&
+                        buffer.compid == compid)
+                    {
+                        var ans = buffer.ToStructure<mavlink_mission_request_int_t>();
+
+                        log.InfoFormat("getRequestedWPNo INT seq {0} ts {1} tc {2}", ans.seq, ans.target_system,
                             ans.target_component);
 
                         giveComport = false;
@@ -5185,7 +5236,7 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
                         if (MAVlist[sysid, compidcurrent].cs.version.Major > 0 ||
                             MAVlist[sysid, compidcurrent].cs.version.Minor >= 4)
                         {
-                            if (sev <= (byte)MAV_SEVERITY.WARNING)
+                            if (sev <= (byte)Settings.Instance.GetInt32("severity", 4))
                             {
                                 printit = true;
                                 mavsev = (MAV_SEVERITY)sev;
@@ -5637,10 +5688,15 @@ Mission Planner waits for 2 valid heartbeat packets before connecting");
             req.target_component = compid;
             req.target_system = sysid;
 
-            // use both methods
+            // use *all three* methods
+            doCommand(MAVLink.MAV_CMD.REQUEST_MESSAGE,
+                (float)MAVLink.MAVLINK_MSG_ID.AUTOPILOT_VERSION,
+                0, 0, 0, 0, 0, 0, false);
+
+	    // MAV_CMD.REQUEST_AUTOPILOT_CAPABILITIES is deprecated
             doCommand(MAV_CMD.REQUEST_AUTOPILOT_CAPABILITIES, 0, 0, 0, 0, 0, 0, 0, false);
 
-            // request point
+	    // AUTOPILOT_VERSION_REQUEST is deprecated
             generatePacket((byte) MAVLINK_MSG_ID.AUTOPILOT_VERSION_REQUEST, req);
 
             if (!responcerequired)

@@ -467,7 +467,7 @@ namespace MissionPlanner
                         var sb = new StringBuilder();
 
                         sb.Append("#Shap to Poly - Mission Planner\r\n");
-                        foreach (var point in feature.Coordinates)
+                        foreach (var point in feature.Geometry.Coordinates)
                         {
                             if (reproject)
                             {
@@ -1466,6 +1466,11 @@ namespace MissionPlanner
                     CustomMessageBox.Show("The new APJ has been saved with the source APJ");
                 }
             }
+        }
+
+        private void but_dfumode_Click(object sender, EventArgs e)
+        {
+            MainV2.comPort.doDFUBoot((byte) MainV2.comPort.sysidcurrent, (byte) MainV2.comPort.compidcurrent);
         }
     }
 }

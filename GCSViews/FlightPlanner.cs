@@ -30,7 +30,7 @@ using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.RegularExpressions;
@@ -295,7 +295,7 @@ namespace MissionPlanner.GCSViews
             timer1.Start();
 
             // hide altmode if old copter version
-            if (MainV2.comPort.BaseStream.IsOpen && MainV2.comPort.MAV.cs.firmware == Firmwares.ArduCopter2 &&
+            if (MainV2.comPort.BaseStream != null && MainV2.comPort.BaseStream.IsOpen && MainV2.comPort.MAV.cs.firmware == Firmwares.ArduCopter2 &&
                 MainV2.comPort.MAV.cs.version < new Version(3, 3))
             {
                 CMB_altmode.Visible = false;
@@ -1631,7 +1631,7 @@ namespace MissionPlanner.GCSViews
                     pos.Lat = lat;
                     pos.Lng = lng;
                     item.Position = pos;
-                    item.ToolTipText = tag + " - " + alt;
+                    item.ToolTipText = tag + " : " + alt;
 
                     var rect = overlay.Markers.OfType<GMapMarkerRect>().Where(a => a.InnerMarker == item);
                     var mBorders = rect.First();
@@ -2221,7 +2221,8 @@ namespace MissionPlanner.GCSViews
                 }
 
                 MainMap.MapProvider = (GMapProvider) comboBoxMapType.SelectedItem;
-                FlightData.mymap.MapProvider = (GMapProvider) comboBoxMapType.SelectedItem;
+                if(FlightData.mymap != null)
+                    FlightData.mymap.MapProvider = (GMapProvider) comboBoxMapType.SelectedItem;
                 Settings.Instance["MapType"] = comboBoxMapType.Text;
             }
             catch (Exception ex)
@@ -3533,7 +3534,7 @@ namespace MissionPlanner.GCSViews
                         string path = Path.GetDirectoryName(file);
                         foreach (var feature in fs.Features)
                         {
-                            foreach (var point in feature.Coordinates)
+                            foreach (var point in feature.Geometry.Coordinates)
                             {
                                 if (reproject)
                                 {
@@ -5988,6 +5989,23 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
                     return true;
                 }, (byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent);
 
+            var sub3 = MainV2.comPort.SubscribeToPacketType(MAVLink.MAVLINK_MSG_ID.MISSION_REQUEST_INT,
+                message =>
+                {
+                    var data = ((MAVLink.mavlink_mission_request_int_t)message.data);
+                    // check what we sent is what the message is.
+                    if (MainV2.comPort.MAV.sysid != message.sysid &&
+                        MainV2.comPort.MAV.compid != message.compid)
+                        return true;
+                    // check this gcs sent it
+                    if (data.target_system != MAVLinkInterface.gcssysid ||
+                        data.target_component != (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER)
+                        return true;
+                    reqno = data.seq;
+                    Console.WriteLine("MISSION_REQUEST_INT " + reqno + " " + data.ToJSON(Formatting.None));
+                    return true;
+                }, (byte)MainV2.comPort.sysidcurrent, (byte)MainV2.comPort.compidcurrent);
+
             ((ProgressReporterDialogue) sender).UpdateProgressAndStatus(0, "Set total wps ");
             MainV2.comPort.setWPTotal(totalwpcountforupload);
 
@@ -6029,6 +6047,7 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
                             MainV2.comPort.setWPTotal(0);
                             MainV2.comPort.UnSubscribeToPacketType(sub1);
                             MainV2.comPort.UnSubscribeToPacketType(sub2);
+                            MainV2.comPort.UnSubscribeToPacketType(sub3);
                             return;
                         }
 
@@ -6061,6 +6080,7 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
                             sender.doWorkArgs.ErrorMessage = "Upload failed, please reduce the number of wp's";
                             MainV2.comPort.UnSubscribeToPacketType(sub1);
                             MainV2.comPort.UnSubscribeToPacketType(sub2);
+                            MainV2.comPort.UnSubscribeToPacketType(sub3);
                             return;
                         }
 
@@ -6072,6 +6092,7 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
                                 result;
                             MainV2.comPort.UnSubscribeToPacketType(sub1);
                             MainV2.comPort.UnSubscribeToPacketType(sub2);
+                            MainV2.comPort.UnSubscribeToPacketType(sub3);
                             return;
                         }
 
@@ -6082,6 +6103,7 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
                                                                  result.ToString());
                             MainV2.comPort.UnSubscribeToPacketType(sub1);
                             MainV2.comPort.UnSubscribeToPacketType(sub2);
+                            MainV2.comPort.UnSubscribeToPacketType(sub3);
                             return;
                         }
 
@@ -6153,6 +6175,7 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
 
             MainV2.comPort.UnSubscribeToPacketType(sub1);
             MainV2.comPort.UnSubscribeToPacketType(sub2);
+            MainV2.comPort.UnSubscribeToPacketType(sub3);
 
             MainV2.comPort.setWPACK();
 
@@ -7739,18 +7762,17 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
             }
         }
 
-        private XmlDocument MakeRequest(string requestUrl)
+        public XmlDocument MakeRequest(string requestUrl)
         {
             try
             {
-                HttpWebRequest request = WebRequest.Create(requestUrl) as HttpWebRequest;
-                if (!String.IsNullOrEmpty(Settings.Instance.UserAgent))
-                    ((HttpWebRequest) request).UserAgent = Settings.Instance.UserAgent;
-                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+                var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("User-Agent", Settings.Instance.UserAgent);
+                client.Timeout = System.TimeSpan.FromSeconds(30);
 
 
                 XmlDocument xmlDoc = new XmlDocument();
-                xmlDoc.Load(response.GetResponseStream());
+                xmlDoc.Load(client.GetStreamAsync(requestUrl).GetAwaiter().GetResult());
                 return (xmlDoc);
             }
             catch (Exception e)
@@ -7889,7 +7911,14 @@ Column 1: Field type (RALLY is the only one at the moment -- may have RALLY_LAND
             string place = "Perth Airport, Australia";
             if (DialogResult.OK == InputBox.Show("Location", "Enter your location", ref place))
             {
+                // Create a backup of the map provider
+                var provider = MainMap.MapProvider;
+                // Set map provider to OpenStreetMap
+                MainMap.MapProvider = GMapProviders.OpenStreetMap;
+                // Zoom to the region specified
                 GeoCoderStatusCode status = MainMap.SetPositionByKeywords(place);
+                // Restore the map provider
+                MainMap.MapProvider = provider;
                 if (status != GeoCoderStatusCode.G_GEO_SUCCESS)
                 {
                     CustomMessageBox.Show("Google Maps Geocoder can't find: '" + place + "', reason: " + status,

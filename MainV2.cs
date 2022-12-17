@@ -754,6 +754,16 @@ namespace MissionPlanner
             Application.DoEvents();
 
             instance = this;
+
+            MyView = new MainSwitcher(this);
+
+            View = MyView;
+
+            if (Settings.Instance.ContainsKey("language") && !string.IsNullOrEmpty(Settings.Instance["language"]))
+            {
+                changelanguage(CultureInfoEx.GetCultureInfo(Settings.Instance["language"]));
+            }
+
             InitializeComponent();
 
             //Init Theme table and load BurntKermit as a default
@@ -776,9 +786,6 @@ namespace MissionPlanner
 
             Utilities.ThemeManager.ApplyThemeTo(this);
 
-            MyView = new MainSwitcher(this);
-
-            View = MyView;
 
             // define default basestream
             comPort.BaseStream = new SerialPort();
@@ -858,11 +865,6 @@ namespace MissionPlanner
             }
 
             MissionPlanner.Utilities.Tracking.cid = new Guid(Settings.Instance["guid"].ToString());
-
-            if (Settings.Instance.ContainsKey("language") && !string.IsNullOrEmpty(Settings.Instance["language"]))
-            {
-                changelanguage(CultureInfoEx.GetCultureInfo(Settings.Instance["language"]));
-            }
 
             if (splash != null)
             {
@@ -1042,7 +1044,7 @@ namespace MissionPlanner
 
                 //Load customfield names from config
 
-                for (short i = 0; i < 10; i++)
+                for (short i = 0; i < 20; i++)
                 {
                     var fieldname = "customfield" + i.ToString();
                     if (Settings.Instance.ContainsKey(fieldname))
@@ -3930,19 +3932,6 @@ namespace MissionPlanner
 
                     Settings.Instance["kindexdate"] = DateTime.Now.ToShortDateString();
                 }
-            }
-            catch (Exception ex)
-            {
-                log.Error(ex);
-            }
-        }
-
-        private void BGgetTFR(object state)
-        {
-            try
-            {
-                tfr.tfrcache = Settings.GetUserDataDirectory() + "tfr.xml";
-                tfr.GetTFRs();
             }
             catch (Exception ex)
             {
