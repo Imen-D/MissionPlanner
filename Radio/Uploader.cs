@@ -14,8 +14,10 @@ namespace MissionPlanner.Radio
         {
             // device IDs XXX should come with the firmware image...
             DEVICE_ID_LORA_MAV = 0x17,
+            DEVICE_ID_LORA_MAV_2W = 0x19,
             DEVICE_ID_SKY_DB30 = 0x15,
             DEVICE_ID_LORA_DIVERSITY = 0x18,
+            DEVICE_ID_LORA_DIVERSITY_2W = 0x1A,
 
             DEVICE_ID_RF50 = 0x4d,
             DEVICE_ID_HM_TRP = 0x4e,
@@ -137,13 +139,18 @@ namespace MissionPlanner.Radio
 
         private void upload_and_verify(IHex image_data)
         {
-            if (image_data.bankingDetected && ((byte)id & 0x80) != 0x80 && id != Board.DEVICE_ID_LORA_MAV && id != Board.DEVICE_ID_LORA_DIVERSITY)
+            if (image_data.bankingDetected && ((byte)id & 0x80) != 0x80 &&
+                id != Board.DEVICE_ID_LORA_MAV &&
+                id != Board.DEVICE_ID_LORA_DIVERSITY &&
+                id != Board.DEVICE_ID_LORA_MAV_2W &&
+                id != Board.DEVICE_ID_LORA_DIVERSITY_2W)
             {
                 log("This Firmware requires banking support");
                 throw new Exception("This Firmware requires banking support");
             }
 
-            if (((byte)id & 0x80) == 0x80 || id == Board.DEVICE_ID_LORA_MAV || id == Board.DEVICE_ID_LORA_DIVERSITY)
+            if (((byte)id & 0x80) == 0x80 || id == Board.DEVICE_ID_LORA_MAV || id == Board.DEVICE_ID_LORA_DIVERSITY ||
+                id == Board.DEVICE_ID_LORA_MAV_2W || id == Board.DEVICE_ID_LORA_DIVERSITY_2W)
             {
                 banking = true;
                 log("Using 32bit addresses");
@@ -205,7 +212,7 @@ namespace MissionPlanner.Radio
 
             int MAX_WRITE_BYTE = 0;
 
-            if (id == Board.DEVICE_ID_LORA_MAV || id == Board.DEVICE_ID_LORA_DIVERSITY)
+            if (id == Board.DEVICE_ID_LORA_MAV || id == Board.DEVICE_ID_LORA_DIVERSITY || id == Board.DEVICE_ID_LORA_MAV_2W || id == Board.DEVICE_ID_LORA_DIVERSITY_2W)
                 MAX_WRITE_BYTE = PROG_MULTI_REMOTE;
             else
                 MAX_WRITE_BYTE = PROG_MULTI_MAX;
@@ -287,7 +294,7 @@ namespace MissionPlanner.Radio
             send(Code.EOC);
 
             // sleep for 2 second - erase seems to take about 2 seconds
-            Thread.Sleep(2000);
+            Thread.Sleep(2500);
 
             getSync();
         }
@@ -387,7 +394,7 @@ namespace MissionPlanner.Radio
         private void cmdReboot()
         {
             send(Code.REBOOT);
-            if(id == Board.DEVICE_ID_LORA_DIVERSITY || id == Board.DEVICE_ID_LORA_MAV)
+            if(id == Board.DEVICE_ID_LORA_DIVERSITY || id == Board.DEVICE_ID_LORA_MAV || id == Board.DEVICE_ID_LORA_MAV_2W || id == Board.DEVICE_ID_LORA_DIVERSITY_2W)
                 send(Code.EOC);
         }
 
@@ -404,7 +411,8 @@ namespace MissionPlanner.Radio
             // XXX should be getting valid board/frequency data from firmware file
             if ((id != Board.DEVICE_ID_HM_TRP) && (id != Board.DEVICE_ID_RF50) && (id != Board.DEVICE_ID_RFD900) &&
                 (id != Board.DEVICE_ID_RFD900A) && (id != Board.DEVICE_ID_RFD900P) && (id != Board.DEVICE_ID_RFD900U) &&
-                (id != Board.DEVICE_ID_LORA_MAV) && (id != Board.DEVICE_ID_LORA_DIVERSITY))
+                (id != Board.DEVICE_ID_LORA_MAV) && (id != Board.DEVICE_ID_LORA_DIVERSITY) &&
+                (id != Board.DEVICE_ID_LORA_MAV_2W) && (id != Board.DEVICE_ID_LORA_DIVERSITY_2W))
                 throw new Exception("bootloader device ID mismatch - device:" + id);
 
             getSync();

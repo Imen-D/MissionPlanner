@@ -1090,7 +1090,8 @@ S15: MAX_WINDOW=131
                     // 8 and 9
                     if (freq == Uploader.Frequency.FREQ_915)
                     {
-                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY)
+                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY ||
+                            Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV_2W || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY_2W)
                         {
                             MIN_FREQ.DataSource = Range(863000, 870000, 902000, 928000, 1000);
                             RMIN_FREQ.DataSource = Range(863000, 870000, 902000, 928000, 1000);
@@ -1113,13 +1114,14 @@ S15: MAX_WINDOW=131
                     }
                     else if (freq == Uploader.Frequency.FREQ_433)
                     {
-                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY)
+                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY ||
+                            Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV_2W || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY_2W)
                         {
-                            MIN_FREQ.DataSource = Range(430000, 500, 440000);
-                            RMIN_FREQ.DataSource = Range(430000, 500, 440000);
+                            MIN_FREQ.DataSource = Range(410000, 1000, 460000);
+                            RMIN_FREQ.DataSource = Range(410000, 1000, 460000);
 
-                            MAX_FREQ.DataSource = Range(430000, 500, 440000);
-                            RMAX_FREQ.DataSource = Range(430000, 500, 440000);
+                            MAX_FREQ.DataSource = Range(410000, 1000, 460000);
+                            RMAX_FREQ.DataSource = Range(410000, 1000, 460000);
                         }
                         else
                         {
@@ -1132,7 +1134,8 @@ S15: MAX_WINDOW=131
                     }
                     else if (freq == Uploader.Frequency.FREQ_868)
                     {
-                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY)
+                        if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY ||
+                            Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV_2W || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY_2W)
                         {
                             MIN_FREQ.DataSource = Range(863000, 1000, 870000);
                             RMIN_FREQ.DataSource = Range(863000, 1000, 870000);
@@ -1150,7 +1153,8 @@ S15: MAX_WINDOW=131
                         }
                     }
 
-                    if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY)
+                    if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY ||
+                        Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV_2W || Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY_2W)
                     {
                         // change control text label
                         label3.Text = "SF";
@@ -1213,14 +1217,20 @@ S15: MAX_WINDOW=131
                     }
 
                     if (Session.Board == Uploader.Board.DEVICE_ID_RFD900 ||
-                            Session.Board == Uploader.Board.DEVICE_ID_RFD900A
-                            || Session.Board == Uploader.Board.DEVICE_ID_RFD900P ||
+                            Session.Board == Uploader.Board.DEVICE_ID_RFD900A ||
+                            Session.Board == Uploader.Board.DEVICE_ID_RFD900P ||
                             Session.Board == Uploader.Board.DEVICE_ID_RFD900X ||
                             Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV||
                             Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY)
                     {
                         TXPOWER.DataSource = Range(0, 1, 30);
                         RTXPOWER.DataSource = Range(0, 1, 30);
+                    }
+                    else if (Session.Board == Uploader.Board.DEVICE_ID_LORA_MAV_2W ||
+                             Session.Board == Uploader.Board.DEVICE_ID_LORA_DIVERSITY_2W)
+                    {
+                        TXPOWER.DataSource = Range(3, 1, 33);
+                        RTXPOWER.DataSource = Range(3, 1, 33);
                     }
                     else if(Session.Board == Uploader.Board. DEVICE_ID_SKY_DB30) // redefined data source
                     {

@@ -978,6 +978,17 @@ namespace RFD.RFD900
                         else
                             return null;
                     }
+                case Uploader.Board.DEVICE_ID_LORA_MAV_2W:
+                    {
+                        if (Freq == Uploader.Frequency.FREQ_433)
+                            return new LORA_MAV2W433(Session);
+                        else if (Freq == Uploader.Frequency.FREQ_868)
+                            return new LORA_MAV2W915(Session);
+                        else if (Freq == Uploader.Frequency.FREQ_915)
+                            return new LORA_MAV2W915(Session);
+                        else
+                            return null;
+                    }
                 case Uploader.Board.DEVICE_ID_LORA_DIVERSITY:
                     {
                         if (Freq == Uploader.Frequency.FREQ_433)
@@ -986,6 +997,17 @@ namespace RFD.RFD900
                             return new LORA_DUAL_MAV915(Session);
                         else if (Freq == Uploader.Frequency.FREQ_915)
                             return new LORA_DUAL_MAV915(Session);
+                        else
+                            return null;
+                    }
+                case Uploader.Board.DEVICE_ID_LORA_DIVERSITY_2W:
+                    {
+                        if (Freq == Uploader.Frequency.FREQ_433)
+                            return new LORA_DUAL_MAV2W433(Session);
+                        else if (Freq == Uploader.Frequency.FREQ_868)
+                            return new LORA_DUAL_MAV2W915(Session);
+                        else if (Freq == Uploader.Frequency.FREQ_915)
+                            return new LORA_DUAL_MAV2W915(Session);
                         else
                             return null;
                     }
@@ -1147,6 +1169,50 @@ namespace RFD.RFD900
         }
     }
 
+    public class LORA_MAV2W915 : RFD900APU
+    {
+        public LORA_MAV2W915(TSession Session)
+            : base(Session)
+        {
+
+        }
+
+        protected override string[] GetFirmwareSearchTokens()
+        {
+            return new string[] { "SE-LINK2W915" };
+        }
+
+        public override Uploader.Board Board
+        {
+            get
+            {
+                return Uploader.Board.DEVICE_ID_LORA_MAV_2W;
+            }
+        }
+    }
+
+    public class LORA_MAV2W433 : RFD900APU
+    {
+        public LORA_MAV2W433(TSession Session)
+            : base(Session)
+        {
+
+        }
+
+        protected override string[] GetFirmwareSearchTokens()
+        {
+            return new string[] { "SE-LINK2W433" };
+        }
+
+        public override Uploader.Board Board
+        {
+            get
+            {
+                return Uploader.Board.DEVICE_ID_LORA_MAV_2W;
+            }
+        }
+    }
+
     public class LORA_DUAL_MAV915 : RFD900APU
     {
         public LORA_DUAL_MAV915(TSession Session)
@@ -1187,6 +1253,50 @@ namespace RFD.RFD900
             get
             {
                 return Uploader.Board.DEVICE_ID_LORA_DIVERSITY;
+            }
+        }
+    }
+
+    public class LORA_DUAL_MAV2W915 : RFD900APU
+    {
+        public LORA_DUAL_MAV2W915(TSession Session)
+            : base(Session)
+        {
+
+        }
+
+        protected override string[] GetFirmwareSearchTokens()
+        {
+            return new string[] { "PRH_DUAL_LINK2W915" };
+        }
+
+        public override Uploader.Board Board
+        {
+            get
+            {
+                return Uploader.Board.DEVICE_ID_LORA_DIVERSITY_2W;
+            }
+        }
+    }
+
+    public class LORA_DUAL_MAV2W433 : RFD900APU
+    {
+        public LORA_DUAL_MAV2W433(TSession Session)
+            : base(Session)
+        {
+
+        }
+
+        protected override string[] GetFirmwareSearchTokens()
+        {
+            return new string[] { "PRH_DUAL_LINK2W433" };
+        }
+
+        public override Uploader.Board Board
+        {
+            get
+            {
+                return Uploader.Board.DEVICE_ID_LORA_DIVERSITY_2W;
             }
         }
     }
