@@ -362,9 +362,9 @@ namespace MissionPlanner.GeoRef
                             int raltindex = sr.dflog.FindMessageOffset("CAM", "RelAlt");
                             int galtindex = sr.dflog.FindMessageOffset("CAM", "GPSAlt");
 
-                            int rindex = sr.dflog.FindMessageOffset("CAM", "Roll");
-                            int pindex = sr.dflog.FindMessageOffset("CAM", "Pitch");
-                            int yindex = sr.dflog.FindMessageOffset("CAM", "Yaw");
+                            int rindex = sr.dflog.FindMessageOffset("CAM", "R");
+                            int pindex = sr.dflog.FindMessageOffset("CAM", "P");
+                            int yindex = sr.dflog.FindMessageOffset("CAM", "Y");
 
                             int gtimeindex = sr.dflog.FindMessageOffset("CAM", "GPSTime");
                             int gweekindex = sr.dflog.FindMessageOffset("CAM", "GPSWeek");
@@ -422,9 +422,9 @@ namespace MissionPlanner.GeoRef
                         int raltindex = sr.dflog.FindMessageOffset("TRIG", "RelAlt");
                         int galtindex = sr.dflog.FindMessageOffset("TRIG", "GPSAlt");
 
-                        int rindex = sr.dflog.FindMessageOffset("TRIG", "Roll");
-                        int pindex = sr.dflog.FindMessageOffset("TRIG", "Pitch");
-                        int yindex = sr.dflog.FindMessageOffset("TRIG", "Yaw");
+                        int rindex = sr.dflog.FindMessageOffset("TRIG", "R");
+                        int pindex = sr.dflog.FindMessageOffset("TRIG", "P");
+                        int yindex = sr.dflog.FindMessageOffset("TRIG", "Y");
 
                         int gtimeindex = sr.dflog.FindMessageOffset("TRIG", "GPSTime");
                         int gweekindex = sr.dflog.FindMessageOffset("TRIG", "GPSWeek");
