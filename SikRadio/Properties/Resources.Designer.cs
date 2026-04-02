@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SikRadio.Properties {
+namespace LoRaMav.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace SikRadio.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SikRadio.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("LoRaMav.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,16 +57,6 @@ namespace SikRadio.Properties {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] RFDSiK_V3_00_rfd900x {
-            get {
-                object obj = ResourceManager.GetObject("RFDSiK_V3_00_rfd900x", resourceCulture);
-                return ((byte[])(obj));
             }
         }
         

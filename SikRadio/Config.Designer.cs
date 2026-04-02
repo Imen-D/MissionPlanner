@@ -41,10 +41,10 @@
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.terminalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rssiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.btnConnect = new System.Windows.Forms.Button();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.projectPageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.btnConnect = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -112,13 +112,13 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.BackgroundImage = global::SikRadio.Properties.Resources.sik;
             resources.ApplyResources(this.pictureBox1, "pictureBox1");
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.TabStop = false;
             // 
             // menuStrip1
             // 
+            this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.settingsToolStripMenuItem,
             this.terminalToolStripMenuItem,
@@ -177,7 +177,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             resources.ApplyResources(this, "$this");
             this.Controls.Add(this.btnConnect);
-
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.pictureBox1);

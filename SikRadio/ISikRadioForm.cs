@@ -8,6 +8,5 @@ namespace SikRadio
         void Disconnect();
         void Show();
         bool Enabled { get; set; }
-        string Header { get; }
     }
 }
